@@ -1,4 +1,5 @@
 #pragma once
+#include "sample.hpp"
 #include <vector>
 #include <string_view>
 #include <cstddef>
@@ -34,8 +35,8 @@ namespace ScarfSparrow
     std::size_t size() const noexcept { return len; }
     t& operator[](std::size_t i) const noexcept { return p[i]; }
   };
-  using PortOutput = PortSpan<unsigned short>;
-  using PortInput = PortSpan<unsigned short const>;
+  using PortOutput = PortSpan<Sample>;
+  using PortInput = PortSpan<Sample const>;
 
   /** Audio graph node. */
   class Node
