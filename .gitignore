@@ -6,6 +6,7 @@
 DEADJOE
 /notes
 /build
+/build-static
 /out
 /.vs
 /CMakeSettings.json
