@@ -47,9 +47,10 @@ namespace ScarfSparrow
     virtual PortInfo describeInput(unsigned i) noexcept = 0;
     virtual unsigned countOutputs() const noexcept = 0;
     virtual PortInfo describeOutput(unsigned i) noexcept = 0;
-    bool run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs);
+    virtual bool pendingOutput() const noexcept = 0;
+    bool run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs) noexcept;
   protected:
-    virtual bool do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs) = 0;
+    virtual bool do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs) noexcept = 0;
   };
 
   /**

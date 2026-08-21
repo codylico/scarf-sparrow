@@ -5,6 +5,9 @@ set(ScarfSparrow_Core_SOURCES
   "graph.cpp"
   "graph.hpp"
   "sample.hpp"
+  "ring.cpp"
+  "ring.hpp"
+  "port.hpp"
 )
 
 add_library(scarfsparrow_core STATIC "${ScarfSparrow_Core_SOURCES}")
