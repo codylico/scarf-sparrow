@@ -1,5 +1,7 @@
 #pragma once
+#include <vector>
 #include <string_view>
+#include <cstddef>
 
 namespace ScarfSparrow
 {
@@ -13,9 +15,29 @@ namespace ScarfSparrow
   struct PortInfo
   {
     PortType typ;
-    /** Number of samples accepted at once, or zero for "give me everything now". */
+    /** Number of samples accepted at once */
     unsigned short batch_size;
   };
+
+  /** `std::span<unsigned short>` shim. */
+  template <typename t>
+  class PortSpan
+  {
+  private:
+    t* p = nullptr;
+    std::size_t len = 0;
+  public:
+    using value_type = t;
+    constexpr PortSpan() = default;
+    constexpr PortSpan(t* dta, std::size_t sz) : p(dta), len(sz) {}
+    t* data() const noexcept { return p; }
+    std::size_t size() const noexcept { return len; }
+    t& operator[](std::size_t i) const noexcept { return p[i]; }
+  };
+  using PortOutput = PortSpan<unsigned short>;
+  using PortInput = PortSpan<unsigned short const>;
+
+  /** Audio graph node. */
   class Node
   {
   public:
@@ -24,6 +46,9 @@ namespace ScarfSparrow
     virtual PortInfo describeInput(unsigned i) noexcept = 0;
     virtual unsigned countOutputs() const noexcept = 0;
     virtual PortInfo describeOutput(unsigned i) noexcept = 0;
+    bool run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs);
+  protected:
+    virtual bool do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs) = 0;
   };
 
   /**

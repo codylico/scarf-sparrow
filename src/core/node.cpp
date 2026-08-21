@@ -3,6 +3,15 @@
 
 namespace ScarfSparrow
 {
+#pragma region "ScarfSparrow/Node / interface"
+  bool Node::run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs)
+  {
+    if (inputs.size() < countInputs() || outputs.size() < countOutputs())
+      return false;
+    return do_run(inputs, outputs);
+  }
+#pragma endregion
+
 #pragma region "ScarfSparrow/Node / namespace-local"
   PortType portTypeFromString(std::string_view name) noexcept
   {
