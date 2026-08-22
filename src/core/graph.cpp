@@ -21,13 +21,14 @@ namespace ScarfSparrow
       return std::numeric_limits<unsigned>::max();
     auto const index = static_cast<unsigned>(boxes.size());
     boxes.emplace_back();
+    auto const in_count = node->countInputs();
+    auto const out_count = node->countOutputs();
     auto& back = boxes.back();
     back.node = std::move(node);
     back.name = name;
-    auto const out_count = node->countOutputs();
     back.output_banks.resize(out_count);
-    auto const in_count = node->countInputs();
     back.input_links.resize(in_count);
+    index_map[std::string(name)] = index;
     return index;
   }
 #pragma endregion

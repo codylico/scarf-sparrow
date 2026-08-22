@@ -54,14 +54,14 @@ namespace ScarfSparrow
     auto* const buffer = static_cast<Sample*>(al_get_audio_stream_fragment(ptr.get()));
     if (!buffer)
       return false;
-    std::array<std::size_t,2> sizes = {{inputs[0].size()}};
-    for (int i = 0; i < 2; ++i)
+    std::array<std::size_t,2> sizes = {{inputs[0].size(), inputs[1].size()}};
+    for (int i = 0; i < batch_size; ++i)
     {
-      auto const sz = inputs[i].size();
-      sizes[i] = sz;
-      if (sz > 0)
-        std::memcpy(buffer+i*batch_size, inputs[i].data(), sz*2);
+      auto* const sample = &buffer[i*2];
+      for (std::size_t j = 0; j < sizes.size(); ++j)
+        buffer[j] = (i < sizes[j]) ? inputs[j][i] : 0;
     }
+    al_set_audio_stream_fragment(ptr.get(), buffer);
     return static_cast<unsigned>(sizes[0] > sizes[1] ? sizes[0] : sizes[1]);
   }
 #pragma endregion

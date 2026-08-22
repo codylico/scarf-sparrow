@@ -1,4 +1,5 @@
 
+#define ALLEGRO_NO_MAGIC_MAIN
 #include "../src/core/graph.hpp"
 #include "../src/core/zero.hpp"
 #include "../src/alleg/stream.hpp"
@@ -34,6 +35,7 @@ struct Uninstaller
   }
 };
 
+
 int main(int argc, char**argv)
 {
   constexpr unsigned batch_size = 8192;
@@ -57,15 +59,8 @@ int main(int argc, char**argv)
   al_register_event_source(q.get(), al_get_audio_stream_event_source(stream->get()));
 
   // Make the voice.
-  std::unique_ptr<ALLEGRO_VOICE, VoiceDeleter> vox(al_create_voice(
-    al_get_audio_stream_frequency(stream->get()), al_get_audio_stream_depth(stream->get()),
-    al_get_audio_stream_channels(stream->get())));
-  if (!vox)
-  {
-    std::cerr << "Failed to find a voice." << std::endl;
-    return EXIT_FAILURE;
-  }
-  al_attach_audio_stream_to_voice(stream->get(), vox.get());
+  al_reserve_samples(0);
+  al_attach_audio_stream_to_mixer(stream->get(), al_get_default_mixer());
 
   // Make the graph.
   graph.addNode(std::make_unique<Scarf::ZeroNode>(), "zero");
