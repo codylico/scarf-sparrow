@@ -38,6 +38,13 @@ namespace ScarfSparrow
   using PortOutput = PortSpan<Sample>;
   using PortInput = PortSpan<Sample const>;
 
+  enum class NodeEndMark : signed char
+  {
+    Unknown = -1,
+    More = 0,
+    Done = 1
+  };
+
   /** Audio graph node. */
   class Node
   {
@@ -48,6 +55,7 @@ namespace ScarfSparrow
     virtual unsigned countOutputs() const noexcept = 0;
     virtual PortInfo describeOutput(unsigned i) noexcept = 0;
     virtual bool pendingOutput() const noexcept = 0;
+    virtual NodeEndMark endOfOutput() const noexcept;
     bool run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs) noexcept;
   protected:
     virtual bool do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs) noexcept = 0;

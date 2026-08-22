@@ -8,14 +8,11 @@ namespace ScarfSparrow
   {
   private:
     std::vector<Sample> samples;
-    static constexpr unsigned Factor = 2;
-    unsigned read_pos = 0;
-    unsigned write_pos = 0;
   public:
     explicit Ring(unsigned batch_size = 0);
-    PortOutput viewNextOutput(unsigned max_batch) noexcept;
-    PortInput getLastInput(unsigned max_batch) noexcept;
-    bool empty() const noexcept { return read_pos >= write_pos; }
+    PortOutput viewNextOutput() noexcept;
+    PortInput getLastInput() const noexcept;
+    bool empty() const noexcept;
   private:
     unsigned clampBatch(unsigned x) const noexcept;
   };

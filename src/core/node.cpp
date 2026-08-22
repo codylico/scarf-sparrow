@@ -10,6 +10,11 @@ namespace ScarfSparrow
       return false;
     return do_run(inputs, outputs);
   }
+
+  NodeEndMark Node::endOfOutput() const noexcept
+  {
+    return NodeEndMark::Unknown;
+  }
 #pragma endregion
 
 #pragma region "ScarfSparrow/Node / namespace-local"
