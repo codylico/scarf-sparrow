@@ -4,11 +4,11 @@
 namespace ScarfSparrow
 {
 #pragma region "ScarfSparrow/Node / interface"
-  bool Node::run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
+  unsigned Node::run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
     SampleInfo const& info) noexcept
   {
     if (inputs.size() < countInputs() || outputs.size() < countOutputs())
-      return false;
+      return 0;
     return do_run(inputs, outputs, info);
   }
 

@@ -12,7 +12,7 @@ namespace ScarfSparrow
     unsigned countOutputs() const noexcept override;
     PortInfo describeOutput(unsigned i) const noexcept override;
   protected:
-    virtual bool do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
+    virtual unsigned do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept override;
   };
 }

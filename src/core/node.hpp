@@ -40,8 +40,11 @@ namespace ScarfSparrow
 
   enum class NodeEndMark : signed char
   {
+    /** Node can't say whether it finished yet. */
     Unknown = -1,
+    /** i.e. wants more samples */
     More = 0,
+    /** End of stream for this node. */
     Done = 1
   };
 
@@ -59,12 +62,12 @@ namespace ScarfSparrow
     * @param input input buffers to process
     * @param[out] outputs buffers to fill
     * @param info content information
-    * @return whether any samples were generated
+    * @return maximum number of samples generated in any output buffer
     */
-    bool run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
+    unsigned run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept;
   protected:
-    virtual bool do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
+    virtual unsigned do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept = 0;
   };
 
