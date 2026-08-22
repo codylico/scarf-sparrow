@@ -17,7 +17,7 @@ namespace ScarfSparrow
     std::unique_ptr<ALLEGRO_AUDIO_STREAM, Deleter> ptr;
     unsigned batch_size = 0;
   public:
-    AllegroStreamNode(std::size_t fragment_count, unsigned int frag_samples, unsigned freq = 44100);
+    AllegroStreamNode(std::size_t fragment_count, unsigned int batch_size, unsigned freq = 44100);
     ALLEGRO_AUDIO_STREAM* get() const noexcept { return ptr.get(); }
     unsigned countInputs() const noexcept override;
     PortInfo describeInput(unsigned i) const noexcept override;
