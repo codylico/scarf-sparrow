@@ -42,7 +42,16 @@ namespace ScarfSparrow
     {
       return false;
     }
-    auto& desc = boxes[sink_index].input_links[sink.port];
+    // Check type compatibility.
+    auto& sink_box = boxes[sink_index];
+    auto const sink_type = sink_box.node->describeInput(sink.port);
+    auto const source_type = boxes[source_index].node->describeOutput(source.port);
+    if (sink_type.typ != source_type.typ)
+    {
+      // Incompatible.
+      return false;
+    }
+    auto& desc = sink_box.input_links[sink.port];
     desc.src_id = source_index;
     desc.src_port = source.port;
     return true;
@@ -58,8 +67,26 @@ namespace ScarfSparrow
 
   bool Graph::start(unsigned samples_per_frame)
   {
-    auto const actual = std::min<unsigned short>(samples_per_frame,
+    auto actual = std::min<unsigned short>(samples_per_frame,
         std::numeric_limits<unsigned short>::max());
+    // Normalize batch size.
+    for (auto const& box : boxes)
+    {
+      for (std::size_t i = 0; i < box.input_links.size(); ++i)
+      {
+        auto const want_batch = box.node->describeInput(static_cast<unsigned>(i));
+        if (want_batch.batch_size > actual)
+          actual = want_batch.batch_size;
+      }
+      for (std::size_t i = 0; i < box.output_banks.size(); ++i)
+      {
+        auto const want_batch = box.node->describeOutput(static_cast<unsigned>(i));
+        if (want_batch.batch_size > actual)
+          actual = want_batch.batch_size;
+      }
+    }
+    if (actual == 0)
+      actual = 1;
     unsigned depth_index = 0;
     depth_order.clear();
     depth_order.reserve(boxes.size());
@@ -144,7 +171,7 @@ namespace ScarfSparrow
       // Run the node.
       if (box.finished)
         continue;
-      box.node->run(inputs, outputs);
+      box.node->run(inputs, outputs, info);
       switch (box.node->endOfOutput())
       {
       case NodeEndMark::More:

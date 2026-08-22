@@ -56,9 +56,11 @@ namespace ScarfSparrow
     virtual PortInfo describeOutput(unsigned i) noexcept = 0;
     virtual bool pendingOutput() const noexcept = 0;
     virtual NodeEndMark endOfOutput() const noexcept;
-    bool run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs) noexcept;
+    bool run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
+      SampleInfo const& info) noexcept;
   protected:
-    virtual bool do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs) noexcept = 0;
+    virtual bool do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
+      SampleInfo const& info) noexcept = 0;
   };
 
   /**

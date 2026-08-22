@@ -42,6 +42,7 @@ namespace ScarfSparrow
     unsigned batch_size = 0;
     std::vector<Sample> zeroes;
     bool full_end = false;
+    SampleInfo info = {44100};
 
   public:
     Graph() = default;
