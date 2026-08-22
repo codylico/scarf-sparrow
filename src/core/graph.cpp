@@ -7,6 +7,7 @@
 #include <utility>
 #include <algorithm>
 #include <limits>
+#include <cstring>
 #include <cassert>
 
 namespace ScarfSparrow

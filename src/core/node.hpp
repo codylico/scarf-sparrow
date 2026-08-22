@@ -51,11 +51,16 @@ namespace ScarfSparrow
   public:
     virtual ~Node() = default;
     virtual unsigned countInputs() const noexcept = 0;
-    virtual PortInfo describeInput(unsigned i) noexcept = 0;
+    virtual PortInfo describeInput(unsigned i) const noexcept = 0;
     virtual unsigned countOutputs() const noexcept = 0;
-    virtual PortInfo describeOutput(unsigned i) noexcept = 0;
-    virtual bool pendingOutput() const noexcept = 0;
+    virtual PortInfo describeOutput(unsigned i) const noexcept = 0;
     virtual NodeEndMark endOfOutput() const noexcept;
+    /**
+    * @param input input buffers to process
+    * @param[out] outputs buffers to fill
+    * @param info content information
+    * @return whether any samples were generated
+    */
     bool run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept;
   protected:

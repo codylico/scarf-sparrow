@@ -8,6 +8,8 @@ set(ScarfSparrow_Core_SOURCES
   "ring.cpp"
   "ring.hpp"
   "port.hpp"
+  "zero.cpp"
+  "zero.hpp"
 )
 
 add_library(scarfsparrow_core STATIC "${ScarfSparrow_Core_SOURCES}")
