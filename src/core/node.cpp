@@ -1,9 +1,16 @@
 
 #include "node.hpp"
+#include <utility>
 
 namespace ScarfSparrow
 {
 #pragma region "ScarfSparrow/Node / interface"
+  bool Node::configure(std::string_view json)
+  {
+    if (!std::exchange(once, true))
+      once = do_configure(json);
+    return once;
+  }
   unsigned Node::run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
     SampleInfo const& info) noexcept
   {
@@ -15,6 +22,11 @@ namespace ScarfSparrow
   NodeEndMark Node::endOfOutput() const noexcept
   {
     return NodeEndMark::Unknown;
+  }
+
+  bool Node::do_configure(std::string_view json)
+  {
+    return true;
   }
 #pragma endregion
 

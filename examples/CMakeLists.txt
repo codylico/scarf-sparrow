@@ -6,3 +6,7 @@ target_link_libraries(scarfsparrow_ex_zero
 add_executable(scarfsparrow_ex_rand "ex_rand.cpp")
 target_link_libraries(scarfsparrow_ex_rand
   PUBLIC scarfsparrow_allegro scarfsparrow_core AllegroBox)
+
+add_executable(scarfsparrow_ex_square "ex_square.cpp")
+target_link_libraries(scarfsparrow_ex_square
+  PUBLIC scarfsparrow_allegro scarfsparrow_core AllegroBox)

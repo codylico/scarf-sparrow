@@ -12,6 +12,8 @@ set(ScarfSparrow_Core_SOURCES
   "zero.hpp"
   "rand.cpp"
   "rand.hpp"
+  "square.cpp"
+  "square.hpp"
 )
 
 add_library(scarfsparrow_core STATIC "${ScarfSparrow_Core_SOURCES}")

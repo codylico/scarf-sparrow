@@ -51,8 +51,11 @@ namespace ScarfSparrow
   /** Audio graph node. */
   class Node
   {
+  private:
+    bool once = false;
   public:
     virtual ~Node() = default;
+    bool configure(std::string_view json);
     virtual unsigned countInputs() const noexcept = 0;
     virtual PortInfo describeInput(unsigned i) const noexcept = 0;
     virtual unsigned countOutputs() const noexcept = 0;
@@ -67,6 +70,7 @@ namespace ScarfSparrow
     unsigned run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept;
   protected:
+    virtual bool do_configure(std::string_view json);
     virtual unsigned do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept = 0;
   };
