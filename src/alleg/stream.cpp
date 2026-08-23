@@ -59,7 +59,7 @@ namespace ScarfSparrow
     {
       auto* const sample = &buffer[i*2];
       for (std::size_t j = 0; j < sizes.size(); ++j)
-        buffer[j] = (i < sizes[j]) ? inputs[j][i] : 0;
+        sample[j] = (i < sizes[j]) ? inputs[j][i] : 0;
     }
     al_set_audio_stream_fragment(ptr.get(), buffer);
     return static_cast<unsigned>(sizes[0] > sizes[1] ? sizes[0] : sizes[1]);
