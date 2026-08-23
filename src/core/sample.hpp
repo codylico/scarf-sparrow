@@ -21,4 +21,5 @@ namespace ScarfSparrow
   {
     return static_cast<Sample>(x * 32767.f);
   }
+  float sampleToFrequency(Sample s) noexcept;
 }

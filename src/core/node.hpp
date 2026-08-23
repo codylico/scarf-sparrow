@@ -34,6 +34,7 @@ namespace ScarfSparrow
     t* data() const noexcept { return p; }
     std::size_t size() const noexcept { return len; }
     t& operator[](std::size_t i) const noexcept { return p[i]; }
+    t at_or_zero(std::size_t i) const noexcept { return i < len ? p[i] : 0; }
   };
   using PortOutput = PortSpan<Sample>;
   using PortInput = PortSpan<Sample const>;
