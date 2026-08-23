@@ -51,17 +51,7 @@ int main(int argc, char**argv)
   }
 
   // Event loop.
-  bool done = false;
-  while (!done)
-  {
-    ALLEGRO_EVENT ev = {};
-    al_wait_for_event_timed(q.get(), &ev, 1.0f);
-    if (ev.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
-    {
-      graph.step();
-    }
-    done = graph.done();
-  }
+  Scarf::util_runEventQueue(graph, q.get());
   std::cerr << "Done." << std::endl;
   return EXIT_SUCCESS;
 }
