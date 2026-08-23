@@ -9,6 +9,7 @@ namespace ScarfSparrow
     PortInfo{ PortType::MIDI, 1},
     PortInfo{ PortType::PCM, 1}
   }};
+
 #pragma region "ScarfSparrow/SawNode / implementation(Node)"
   unsigned SawNode::countInputs() const noexcept
   {
@@ -31,7 +32,7 @@ namespace ScarfSparrow
   {
     auto& front = outputs.front();
     auto const& in_data = inputs[1];
-    auto const& notes_data = inputs[1];
+    auto const& notes_data = inputs[0];
     std::size_t i = {};
     auto const first_gap = std::min<std::size_t>(front.size(), in_data.size());
     float freq = sampleToUnit(freq_last) * freq_scale + freq_shift;
