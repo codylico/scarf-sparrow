@@ -99,8 +99,8 @@ namespace ScarfSparrow
       for (auto& ring : box.output_banks)
         ring = Ring(actual);
       box.finished = false;
-      box.visit_index = 0;
       box.visited = false;
+      box.visit_depth = 0;
       if (box.output_banks.empty())
       {
         // mark as ending point
@@ -118,7 +118,7 @@ namespace ScarfSparrow
       }
       auto const current = depth_order[i];
       auto& box = boxes[current];
-      box.visit_index = ++depth_index;
+      auto const next_depth = static_cast<unsigned short>(box.visit_depth+1);
       for (auto j : box.input_links)
       {
         if (j.src_id >= boxes.size())
@@ -127,16 +127,16 @@ namespace ScarfSparrow
           continue;
         }
         auto& source = boxes[j.src_id];
-        if (source.visit_index != 0)
-        {
-          // Cycle detected!
-          return false;
-        }
-        else if (!std::exchange(source.visited, true))
+        if (source.visit_depth < next_depth)
+          source.visit_depth = next_depth;
+        if (!std::exchange(source.visited, true))
           depth_order.push_back(j.src_id);
       }
     }
-    std::reverse(depth_order.begin(), depth_order.end());
+    std::sort(depth_order.begin(), depth_order.end(), [&boxes = boxes](unsigned a, unsigned b)
+      {
+        return boxes[a].visit_depth > boxes[b].visit_depth;
+      });
     batch_size = actual;
     full_end = false;
     zeroes.resize(actual);

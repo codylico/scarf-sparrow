@@ -29,7 +29,7 @@ namespace ScarfSparrow
     struct Box
     {
       std::unique_ptr<Node> node;
-      unsigned visit_index = 0;
+      unsigned short visit_depth = 0;
       bool visited = false;
       bool finished = false;
       std::vector<Ring> output_banks;
