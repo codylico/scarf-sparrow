@@ -2,6 +2,8 @@
 set(ScarfSparrow_Allegro_SOURCES
   "stream.cpp"
   "stream.hpp"
+  "util.cpp"
+  "util.hpp"
   )
 
 add_library(scarfsparrow_allegro STATIC "${ScarfSparrow_Allegro_SOURCES}")

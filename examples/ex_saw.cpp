@@ -3,6 +3,7 @@
 #include "../src/core/graph.hpp"
 #include "../src/core/saw.hpp"
 #include "../src/alleg/stream.hpp"
+#include "../src/alleg/util.hpp"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
 #include <iostream>
@@ -12,42 +13,18 @@
 
 namespace Scarf = ScarfSparrow;
 
-struct EventQueueDeleter
-{
-  void operator()(ALLEGRO_EVENT_QUEUE* q) const noexcept
-  {
-    al_destroy_event_queue(q);
-  }
-};
-
-struct VoiceDeleter
-{
-  void operator()(ALLEGRO_VOICE* vox) const noexcept
-  {
-    al_destroy_voice(vox);
-  }
-};
-struct Uninstaller
-{
-  ~Uninstaller()
-  {
-    al_uninstall_system();
-  }
-};
-
-
 int main(int argc, char**argv)
 {
   constexpr unsigned batch_size = 8192;
   al_init();
-  Uninstaller uninit;
+  Scarf::Uninstaller uninit;
   if (!al_install_audio())
   {
     std::cerr << "Failed to install audio." << std::endl;
     return EXIT_FAILURE;
   }
-  std::unique_ptr<ALLEGRO_EVENT_QUEUE, EventQueueDeleter> q;
-  q.reset(al_create_event_queue());
+
+  auto const q = Scarf::util_makeEventQueue();
   assert(q);
   Scarf::Graph graph;
   auto stream = std::make_unique<Scarf::AllegroStreamNode>(4, batch_size);
