@@ -14,3 +14,7 @@ target_link_libraries(scarfsparrow_ex_square
 add_executable(scarfsparrow_ex_saw "ex_saw.cpp")
 target_link_libraries(scarfsparrow_ex_saw
   PUBLIC scarfsparrow_allegro scarfsparrow_core AllegroBox)
+
+add_executable(scarfsparrow_ex_xiphos "ex_xiphos.cpp")
+target_link_libraries(scarfsparrow_ex_xiphos
+  PUBLIC scarfsparrow_allegro scarfsparrow_core AllegroBox)

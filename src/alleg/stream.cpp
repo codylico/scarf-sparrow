@@ -43,7 +43,7 @@ namespace ScarfSparrow
   }
   NodeEndMark AllegroStreamNode::endOfOutput() const noexcept
   {
-    return ptr && al_get_audio_stream_playing(ptr.get()) ? NodeEndMark::More : NodeEndMark::Done;
+    return ptr ? NodeEndMark::Unknown : NodeEndMark::Done;
   }
 
   unsigned AllegroStreamNode::do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,

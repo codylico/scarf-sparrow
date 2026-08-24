@@ -14,9 +14,9 @@
 
 namespace ScarfSparrow
 {
-  static constexpr unsigned long xiphos_to_ticks(SampleInfo const& info, float secs)
+  static constexpr double xiphos_to_ticks(SampleInfo const& info, float secs)
   {
-    return info.hz * secs;
+    return static_cast<double>(info.hz) * secs;
   }
   using XiphosLine = std::array<std::string,3>;
   using XiphosLineList = std::list<XiphosLine>;
@@ -27,12 +27,14 @@ namespace ScarfSparrow
       "c","cx","d","dx","e","f","fx","g","gx","a","ax","b"
     }};
 
+#pragma region "ScarfSparrow/XiphosNode / static"
   static std::string xiphos_or_default(std::string_view x, std::string_view dflt)
   {
     return x.empty() ? std::string(dflt) : std::string(x);
   }
   static unsigned char xiphos_make_note(std::string_view nm)
   {
+    constexpr int self_octave = 3;
     // split name and octave
     std::size_t i = 0;
     for (; i < nm.size(); ++i)
@@ -48,7 +50,7 @@ namespace ScarfSparrow
     auto const it = std::find(xiphos_order.begin(), xiphos_order.end(), name);
     if (it == xiphos_order.end())
       throw std::invalid_argument("ScarfSparrow::Xiphos: invalid tone name");
-    return (it-xiphos_order.begin())+12*(octave-5);
+    return (it-xiphos_order.begin())+12*(octave+5-self_octave);
   }
 
   static XiphosLine xiphos_split(std::string const& x)
@@ -86,8 +88,9 @@ namespace ScarfSparrow
         continue;
       else if (cut.front() == "def")
       {
-        if (cut[1].empty() || !current.empty() || !map[current].empty())
+        if (cut[1].empty() || !current.empty())
           return false;
+        map[cut[1]].clear();
         current = cut[1];
       }
       else if (cut.front() == "end")
@@ -96,6 +99,8 @@ namespace ScarfSparrow
           return true;
         current = {};
       }
+      else if (cut.front() == "done")
+        return true;
       else
       {
         map[current].push_back(std::move(cut));
@@ -141,11 +146,49 @@ namespace ScarfSparrow
         out.push_back({XiphosOpCode::Tempo, 0,
           static_cast<unsigned short>(std::stoi(line[2])), std::stof(line[1])});
       }
+      else if (cmd == "add")
+      {
+        /* do nothing */;
+      }
       else
         return false;
     }
     return true;
   }
+  static long xiphos_add_timeframe(SampleInfo const& info, XiphosCommand const& cmd,
+    float beat_period, float measure_period, double& residual) noexcept
+  {
+    auto const here_units = cmd.arg8;
+    auto const count = cmd.arg32;
+    double xcount = 0.0;
+    switch (here_units)
+    {
+    case 'b':
+      xcount = xiphos_to_ticks(info, count*beat_period);
+      break;
+    case 'm':
+      xcount = xiphos_to_ticks(info, count*measure_period);
+      break;
+    case 's':
+      xcount = xiphos_to_ticks(info, count);
+      break;
+    default:
+      xcount = count;
+      break;
+    }
+    double n_count = 0.0;
+    residual = std::modf(xcount + residual, &n_count);
+    return static_cast<long>(n_count);
+  }
+
+  static void xiphos_recalc_periods(float& tempo, int note_resolve, float& beat_period, float& measure_period) noexcept
+  {
+    if (tempo < 1.f)
+        tempo = 1.f;
+    beat_period = 60/tempo;
+    measure_period = beat_period*note_resolve;
+  }
+#pragma endregion
 
 #pragma region "ScarfSparrow/XiphosNode / implementation(Node)"
   bool XiphosNode::parseText(std::istream& sword)
@@ -202,6 +245,10 @@ namespace ScarfSparrow
   {
     return i == 0 ? PortInfo{ PortType::MIDI, 1 } : PortInfo{};
   }
+  NodeEndMark XiphosNode::endOfOutput() const noexcept
+  {
+    return done ? NodeEndMark::Done : NodeEndMark::More;
+  }
   unsigned XiphosNode::do_run(std::vector<PortInput> const& inputs,
     std::vector<PortOutput> const& outputs, const SampleInfo &info) noexcept
   {
@@ -232,6 +279,19 @@ namespace ScarfSparrow
     constexpr unsigned MaxIterations = 2048;
     for (unsigned iteration = 0; iteration < MaxIterations; ++iteration)
     {
+      // Finish functions.
+      for (std::size_t j = 0; j <= stack.size(); ++j)
+      {
+        if (pc.offset < defs[pc.func_id].size() || done)
+          break;
+        else if (stack_pos == 0)
+        {
+          done = true;
+          return {};
+        }
+        stack_pos -= 1;
+        pc = stack[stack_pos];
+      }
       auto const& fn = defs[pc.func_id];
       auto const& cmd = fn[pc.offset];
       pc.offset += 1;
@@ -249,19 +309,25 @@ namespace ScarfSparrow
         // Let the counter increment.
         break;
       case XiphosOpCode::Synth:
-        // TODO: the rest of the opcodes.
+        // Compute the timeframe.
+        ticks_remaining += xiphos_add_timeframe(info, cmd, beat_period, measure_period, tick_residual);
+        if (ticks_remaining > 0)
+          return {};
         break;
-      }
-      // Finish functions.
-      while (pc.offset >= defs[pc.func_id].size() && !done)
-      {
-        if (stack_pos == 0)
-        {
-          done = true;
-          break;
-        }
-        stack_pos -= 1;
-        pc = stack[stack_pos];
+      case XiphosOpCode::Tempo:
+        // Compute new tempo.
+        tempo = cmd.arg32;
+        note_resolve = cmd.arg16;
+        xiphos_recalc_periods(tempo, note_resolve, beat_period, measure_period);
+        break;
+      case XiphosOpCode::On:
+        ticks_remaining -= 1;
+        return {static_cast<Sample>(0x9000 | cmd.arg8), static_cast<Sample>(256.f+cmd.arg32*256.f)};
+      case XiphosOpCode::Off:
+        ticks_remaining -= 1;
+        return {static_cast<Sample>(0x8000 | cmd.arg8), 0x100};
+      default:
+        break;
       }
     }
   }

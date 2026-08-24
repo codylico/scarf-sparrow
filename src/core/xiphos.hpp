@@ -53,6 +53,7 @@ namespace ScarfSparrow
     float tempo = 60;
     int note_resolve = 1;
     long ticks_remaining = 0;
+    double tick_residual = 0;
     float beat_period = 0.5f;
     float measure_period = 0.5f;
     std::array<unsigned short,2> next_signal = {};
@@ -63,6 +64,7 @@ namespace ScarfSparrow
     PortInfo describeInput(unsigned i) const noexcept override;
     unsigned countOutputs() const noexcept override;
     PortInfo describeOutput(unsigned i) const noexcept override;
+    NodeEndMark endOfOutput() const noexcept override;
   protected:
     virtual unsigned do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept override;

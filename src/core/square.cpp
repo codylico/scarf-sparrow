@@ -20,7 +20,7 @@ namespace ScarfSparrow
   }
   PortInfo SquareNode::describeInput(unsigned int i) const noexcept
   {
-    return i >= square_ports.size() ? square_ports[i] : PortInfo{};
+    return i >= square_ports.size() ? PortInfo{} : square_ports[i];
   }
   PortInfo SquareNode::describeOutput(unsigned int i) const noexcept
   {

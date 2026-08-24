@@ -172,7 +172,10 @@ namespace ScarfSparrow
         outputs.push_back(bank.viewNextOutput());
       // Run the node.
       if (box.finished)
+      {
+        any_end = true;
         continue;
+      }
       box.node->run(inputs, outputs, info);
       switch (box.node->endOfOutput())
       {
@@ -181,6 +184,7 @@ namespace ScarfSparrow
         break;
       case NodeEndMark::Done:
         any_end = true;
+        box.finished = true;
         break;
       default:
         break;

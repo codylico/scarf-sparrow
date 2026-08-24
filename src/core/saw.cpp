@@ -21,7 +21,7 @@ namespace ScarfSparrow
   }
   PortInfo SawNode::describeInput(unsigned int i) const noexcept
   {
-    return i >= saw_ports.size() ? saw_ports[i] : PortInfo{};
+    return i >= saw_ports.size() ? PortInfo{} : saw_ports[i];
   }
   PortInfo SawNode::describeOutput(unsigned int i) const noexcept
   {

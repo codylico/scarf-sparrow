@@ -19,7 +19,7 @@ namespace ScarfSparrow
   float sampleToFrequency(Sample s) noexcept
   {
     auto const note = (s&255u);
-    return std::ldexp(sample_pitches[note%12] * sample_AZero, note/12);
+    return std::ldexp(sample_pitches[note%12] * sample_AZero, static_cast<int>(note)/12);
   }
 #pragma endregion
 }
