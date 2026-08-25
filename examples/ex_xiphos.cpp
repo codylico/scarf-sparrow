@@ -4,6 +4,8 @@
 #include "../src/core/saw.hpp"
 #include "../src/core/xiphos.hpp"
 #include "../src/core/dimmer.hpp"
+#include "../src/core/polyphony.hpp"
+#include "../src/core/sum.hpp"
 #include "../src/alleg/stream.hpp"
 #include "../src/alleg/util.hpp"
 #include <allegro5/allegro.h>
@@ -21,6 +23,7 @@ namespace Scarf = ScarfSparrow;
 int main(int argc, char**argv)
 {
   constexpr unsigned batch_size = 8192;
+  constexpr unsigned concurrency = 8;
   if (argc < 2)
   {
     std::cerr << "usage: scarfsparrow_ex_xiphos (text_file)" << std::endl;
@@ -61,14 +64,24 @@ int main(int argc, char**argv)
 
   // Make the graph.
   graph.addNode(std::move(xiphos), "xiphos");
-  graph.addNode(std::make_unique<Scarf::SawNode>(), "saw");
+  graph.addNode(std::make_unique<Scarf::PolyphonyNode>(concurrency), "polyphony");
+  graph.addNode(std::make_unique<Scarf::SumNode>(concurrency), "sum");
   graph.addNode(std::move(stream), "al_out");
-  graph.addNode(std::make_unique<Scarf::DimmerNode>(), "dimmer");
-  graph.connect({"xiphos", 0}, {"saw",0});
-  graph.connect({"saw", 0}, {"dimmer",0});
-  graph.connect({"xiphos", 1}, {"dimmer",1});
-  graph.connect({"dimmer", 0}, {"al_out",0});
-  graph.connect({"dimmer", 0}, {"al_out",1});
+  graph.connect({"xiphos", 0}, {"polyphony",0});
+  graph.connect({"xiphos", 1}, {"polyphony",1});
+  graph.connect({"sum", 0}, {"al_out",0});
+  graph.connect({"sum", 0}, {"al_out",1});
+  for (unsigned j = 0; j < concurrency; ++j)
+  {
+    auto saw_name = "saw_" + std::to_string(j);
+    auto dimmer_name = "dimmer_" + std::to_string(j);
+    graph.addNode(std::make_unique<Scarf::SawNode>(), saw_name);
+    graph.addNode(std::make_unique<Scarf::DimmerNode>(1.0f/concurrency), dimmer_name);
+    graph.connect({"polyphony", 0+j*2}, {saw_name,0});
+    graph.connect({saw_name, 0}, {dimmer_name,0});
+    graph.connect({"polyphony", 1+j*2}, {dimmer_name,1});
+    graph.connect({dimmer_name, 0}, {"sum",j});
+  }
   if (!graph.start(batch_size))
   {
     std::cerr << "Failed to start graph." << std::endl;

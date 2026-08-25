@@ -4,6 +4,8 @@ set(ScarfSparrow_Allegro_SOURCES
   "stream.hpp"
   "util.cpp"
   "util.hpp"
+  "midipad.cpp"
+  "midipad.hpp"
   )
 
 add_library(scarfsparrow_allegro STATIC "${ScarfSparrow_Allegro_SOURCES}")
