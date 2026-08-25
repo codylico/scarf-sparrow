@@ -33,7 +33,6 @@ namespace ScarfSparrow
         output[offset] = cmd;
       if (offset < arg2_output.size())
         arg2_output[offset] = arg2;
-      return;
     }
   }
 

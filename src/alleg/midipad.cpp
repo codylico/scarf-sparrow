@@ -77,7 +77,7 @@ namespace ScarfSparrow
       }
       auto const pos = timestampToSample(info, next_note.timestamp);
       auto biased_pos = pos - sample_scope;
-      if (sample_scope + bump - pos < primary_size/2)
+      if (sample_scope + bump - pos < primary_size)
       {
         biased_pos = bump;
       }
