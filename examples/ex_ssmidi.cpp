@@ -63,10 +63,10 @@ int main(int argc, char**argv)
         switch (note.cmd&240u)
         {
         case 0x90:
-          fprintf(stderr, "on [%2u] %2u (%3u) @%u\n", note.cmd&15u, note.args[0], note.args[1], note.timestamp);
+          fprintf(stderr, "on [%2u] %2u (%3u) @%g\n", note.cmd&15u, note.args[0], note.args[1], note.timestamp / 65536.0);
           break;
         case 0x80:
-          fprintf(stderr, "off[%2u] %2u (%3u) @%u\n", note.cmd&15u, note.args[0], note.args[1], note.timestamp);
+          fprintf(stderr, "off[%2u] %2u (%3u) @%g\n", note.cmd&15u, note.args[0], note.args[1], note.timestamp / 65536.0);
           break;
         }
       }

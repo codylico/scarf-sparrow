@@ -3,6 +3,7 @@
 #include "pad.h"
 #include <allegro5/allegro.h>
 #include <CoreMIDI/CoreMIDI.h>
+#include <mach/mach_time.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdatomic.h>
@@ -20,6 +21,8 @@ struct ssmidi_pad_osx
   MIDIEventPacket packets[16];
   _Atomic(unsigned) packet_rpos;
   _Atomic(unsigned) packet_wpos;
+  struct mach_timebase_info tick_info;
+  MIDITimeStamp first_stamp;
 };
 
 static void ssmidi_pad_notify_osx(struct MIDINotification const* notif, void *pad_ptr)
@@ -63,11 +66,28 @@ static int ssmidi_pad_get_packet(struct ssmidi_pad_osx* pad, MIDIEventPacket* pa
   return 0;
 }
 
+static unsigned ssmidi_decode_timestamp(struct ssmidi_pad_osx* pad, MIDITimeStamp ts)
+{
+  if (pad->first_stamp > 0)
+  {
+    // Normalize first...
+    long long const renorm = ts - pad->first_stamp;
+    // ...via nanoseconds...
+    long long const nano = renorm * pad->tick_info.numer / pad->tick_info.denom;
+    // ...to 32-bit stamps.
+    return nano * 65536 / 1000000000LL;
+  }
+  else
+  {
+    pad->first_stamp = ts;
+    return 0;
+  }
+}
+
 static void ssmidi_decode_note(struct ssmidi_pad_osx* pad, MIDITimeStamp ts, UInt32 word)
 {
   struct SSMIDI_PAD_NOTE note = {0};
-  note.timestamp = ts;
-  // mach_absolute_time();
+  note.timestamp = ssmidi_decode_timestamp(pad, ts);
   note.cmd = (unsigned char)((word>>16)&255u);
   note.args[0] = (unsigned char)((word>>8) & 255u);
   note.args[1] = (unsigned char)((word) & 255u);
@@ -148,7 +168,6 @@ void* ssmidi_pad_worker_osx(ALLEGRO_THREAD *th, void *pad_ptr)
     al_wait_cond(pad->osx_cond, pad->osx_mx);
     while (ssmidi_pad_get_packet(pad, &next))
     {
-      fprintf(stderr, "ts: %#llx\n", next.timeStamp);
       ssmidi_decode_note(pad, next.timeStamp, next.words[0]);
       count += 1;
     }
@@ -169,6 +188,14 @@ void* ssmidi_pad_worker_osx(ALLEGRO_THREAD *th, void *pad_ptr)
 int ssmidi_init_pad(struct SSMIDI_PAD* pad, char const* addr)
 {
   struct ssmidi_pad_osx* const expad = (struct ssmidi_pad_osx*)pad;
+  if (mach_timebase_info(&expad->tick_info))
+  {
+    // timestamps inaccurate
+    expad->tick_info.numer = 1;
+    expad->tick_info.denom = 1;
+  }
+  if (expad->tick_info.denom == 0)
+    expad->tick_info.denom = 1;
   pad->addr = strdup(addr);
   if (!pad->addr)
   {
