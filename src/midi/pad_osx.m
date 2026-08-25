@@ -75,7 +75,7 @@ static unsigned ssmidi_decode_timestamp(struct ssmidi_pad_osx* pad, MIDITimeStam
     // ...via nanoseconds...
     long long const nano = renorm * pad->tick_info.numer / pad->tick_info.denom;
     // ...to 32-bit stamps.
-    return nano * 65536 / 1000000000LL;
+    return (unsigned)(nano * 65536 / 1000000000LL);
   }
   else
   {
