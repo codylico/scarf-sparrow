@@ -4,7 +4,7 @@
 
 struct SSMIDI_PAD* ssmidi_create_pad(char const* addr)
 {
-  struct SSMIDI_PAD* const pad = (struct SSMIDI_PAD*)calloc(1, sizeof(struct SSMIDI_PAD));
+  struct SSMIDI_PAD* const pad = ssmidi_pad_os_alloc();
   if (!pad)
     return NULL;
   pad->worker = NULL;

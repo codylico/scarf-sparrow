@@ -17,6 +17,7 @@ if (ScarfSparrow_STATIC)
     list(APPEND AllegroBoxSupplements
       CoreVideo
       CoreAudio
+      CoreMIDI
       AudioToolbox
       OpenGL
       CoreGraphics

@@ -7,8 +7,9 @@ set(ScarfSparrow_Midi_SOURCES
 
 add_library(scarfsparrow_midi STATIC "${ScarfSparrow_Midi_SOURCES}")
 if (APPLE)
+  enable_language(OBJC)
   target_sources(scarfsparrow_midi PRIVATE
-    "pad_osx.c"
+    "pad_osx.m"
   )
 endif()
 target_compile_features(scarfsparrow_midi PUBLIC
