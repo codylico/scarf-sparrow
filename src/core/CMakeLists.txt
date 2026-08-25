@@ -22,6 +22,8 @@ set(ScarfSparrow_Core_SOURCES
   "xiphos.hpp"
   "dimmer.cpp"
   "dimmer.hpp"
+  "polyphony.cpp"
+  "polyphony.hpp"
 )
 
 add_library(scarfsparrow_core STATIC "${ScarfSparrow_Core_SOURCES}")
