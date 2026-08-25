@@ -12,6 +12,7 @@ namespace ScarfSparrow
     float volume_shift = 0.0f;
     Sample volume_last = {};
   public:
+    explicit DimmerNode(float scale = 1.0f, float shift = 0.f);
     unsigned countInputs() const noexcept override;
     PortInfo describeInput(unsigned i) const noexcept override;
     unsigned countOutputs() const noexcept override;

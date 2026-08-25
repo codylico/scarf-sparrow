@@ -7,7 +7,7 @@
 namespace ScarfSparrow
 {
   static std::array<PortInfo,2> const polyphony_ports = {{
-    PortInfo{ PortType::PCM, 1},
+    PortInfo{ PortType::MIDI, 1},
     PortInfo{ PortType::MIDIArg2, 1},
   }};
 
@@ -21,11 +21,12 @@ namespace ScarfSparrow
     std::size_t offset, std::vector<PortOutput> const& outputs) noexcept
   {
     // Recover index of output node processing this note.
-    Sample on_cmd = cmd | 0x100;
+    Sample on_cmd = cmd | 0x1000;
     for (std::size_t i = 0; i < active.size(); ++i)
     {
       if (active[i] != on_cmd)
         continue;
+      active[i] = 0;
       auto& output = outputs[i*2];
       auto& arg2_output = outputs[i*2+1];
       if (offset < output.size())
@@ -92,7 +93,7 @@ namespace ScarfSparrow
     std::vector<PortOutput> const& outputs, const SampleInfo &info) noexcept
   {
     auto const& in_data = inputs.front();
-    for (std::size_t i; i < in_data.size(); ++i)
+    for (std::size_t i = 0; i < in_data.size(); ++i)
     {
       auto const cmd = in_data[i];
       if (!cmd)

@@ -11,6 +11,12 @@ namespace ScarfSparrow
   }};
 
 #pragma region "ScarfSparrow/DimmerNode / implementation(Node)"
+  DimmerNode::DimmerNode(float scale, float shift)
+    : volume_scale(scale), volume_shift(shift)
+  {
+  }
+#pragma endregion
+#pragma region "ScarfSparrow/DimmerNode / implementation(Node)"
   unsigned DimmerNode::countInputs() const noexcept
   {
     return static_cast<unsigned>(dimmer_ports.size());

@@ -26,3 +26,7 @@ target_link_libraries(scarfsparrow_ex_ssmidi
 add_executable(scarfsparrow_ex_midipad "ex_midipad.cpp")
 target_link_libraries(scarfsparrow_ex_midipad
   PUBLIC scarfsparrow_allegro scarfsparrow_core scarfsparrow_midi AllegroBox)
+
+add_executable(scarfsparrow_ex_polypad "ex_polypad.cpp")
+target_link_libraries(scarfsparrow_ex_polypad
+  PUBLIC scarfsparrow_allegro scarfsparrow_core scarfsparrow_midi AllegroBox)
