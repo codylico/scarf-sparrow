@@ -11,6 +11,8 @@ namespace ScarfSparrow
     PCM = 1,
     MIDI = 2,
     Text = 3,
+    /** Second argument of a simple MIDI command, prefixed with 0x100. */
+    MIDIArg2 = 4,
   };
   struct PortInfo
   {

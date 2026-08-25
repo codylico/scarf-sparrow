@@ -1,4 +1,5 @@
 #include "xiphos.hpp"
+#include "port.hpp"
 #include <istream>
 #include <sstream>
 #include <unordered_map>
@@ -26,6 +27,11 @@ namespace ScarfSparrow
   static std::array<std::string_view,12> const xiphos_order = {{
       "c","cx","d","dx","e","f","fx","g","gx","a","ax","b"
     }};
+  static std::array<PortInfo,2> const xiphos_ports = {{
+    PortInfo{ PortType::MIDI, 1},
+    PortInfo{ PortType::MIDIArg2, 1}
+  }};
+
 
 #pragma region "ScarfSparrow/XiphosNode / static"
   static std::string xiphos_or_default(std::string_view x, std::string_view dflt)
@@ -235,7 +241,7 @@ namespace ScarfSparrow
   }
   unsigned XiphosNode::countOutputs() const noexcept
   {
-    return 2;
+    return static_cast<unsigned>(xiphos_ports.size());
   }
   PortInfo XiphosNode::describeInput(unsigned) const noexcept
   {
@@ -243,7 +249,7 @@ namespace ScarfSparrow
   }
   PortInfo XiphosNode::describeOutput(unsigned int i) const noexcept
   {
-    return i == 0 ? PortInfo{ PortType::MIDI, 1 } : PortInfo{};
+    return i >= xiphos_ports.size() ? PortInfo{} : xiphos_ports[i];
   }
   NodeEndMark XiphosNode::endOfOutput() const noexcept
   {
@@ -265,7 +271,7 @@ namespace ScarfSparrow
       }
       auto const sig = runCommands(info);
       front[i] = sig.cmd_note;
-      vol[i] = 256 | sig.vol;
+      vol[i] = (sig.cmd_note ? (256 | sig.vol) : 0);
     }
     return static_cast<unsigned>(front.size());
   }
@@ -322,7 +328,7 @@ namespace ScarfSparrow
         break;
       case XiphosOpCode::On:
         ticks_remaining -= 1;
-        return {static_cast<Sample>(0x9000 | cmd.arg8), static_cast<Sample>(256.f+cmd.arg32*256.f)};
+        return {static_cast<Sample>(0x9000 | cmd.arg8), static_cast<Sample>(256.f+cmd.arg32*127.f)};
       case XiphosOpCode::Off:
         ticks_remaining -= 1;
         return {static_cast<Sample>(0x8000 | cmd.arg8), 0x100};

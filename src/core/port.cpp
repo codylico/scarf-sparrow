@@ -13,6 +13,8 @@ namespace ScarfSparrow
       return PortType::PCM;
     else if (name == "midi")
       return PortType::MIDI;
+    else if (name == "midi-arg2")
+      return PortType::MIDIArg2;
     return {};
   }
 
@@ -26,6 +28,8 @@ namespace ScarfSparrow
       return "pcm";
     case PortType::MIDI:
       return "midi";
+    case PortType::MIDIArg2:
+      return "midi-arg2";
     default:
       return {};
     }

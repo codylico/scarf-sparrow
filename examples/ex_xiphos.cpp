@@ -3,6 +3,7 @@
 #include "../src/core/graph.hpp"
 #include "../src/core/saw.hpp"
 #include "../src/core/xiphos.hpp"
+#include "../src/core/dimmer.hpp"
 #include "../src/alleg/stream.hpp"
 #include "../src/alleg/util.hpp"
 #include <allegro5/allegro.h>
@@ -62,9 +63,12 @@ int main(int argc, char**argv)
   graph.addNode(std::move(xiphos), "xiphos");
   graph.addNode(std::make_unique<Scarf::SawNode>(), "saw");
   graph.addNode(std::move(stream), "al_out");
+  graph.addNode(std::make_unique<Scarf::DimmerNode>(), "dimmer");
   graph.connect({"xiphos", 0}, {"saw",0});
-  graph.connect({"saw", 0}, {"al_out",0});
-  graph.connect({"saw", 0}, {"al_out",1});
+  graph.connect({"saw", 0}, {"dimmer",0});
+  graph.connect({"xiphos", 1}, {"dimmer",1});
+  graph.connect({"dimmer", 0}, {"al_out",0});
+  graph.connect({"dimmer", 0}, {"al_out",1});
   if (!graph.start(batch_size))
   {
     std::cerr << "Failed to start graph." << std::endl;

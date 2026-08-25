@@ -3,6 +3,7 @@
 namespace ScarfSparrow
 {
   using Sample = unsigned short;
+  using SampleU32 = decltype(0xFFffFFffu);
 
   struct SampleInfo
   {
@@ -20,6 +21,10 @@ namespace ScarfSparrow
   constexpr Sample sampleFromUnit(float x)
   {
     return static_cast<Sample>(x * 32767.f);
+  }
+  constexpr float sampleToVolume(Sample x)
+  {
+    return (x&127u) / 127.f;
   }
   float sampleToFrequency(Sample s) noexcept;
 }
