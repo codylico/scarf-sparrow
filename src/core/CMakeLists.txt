@@ -8,6 +8,7 @@ set(ScarfSparrow_Core_SOURCES
   "sample.hpp"
   "ring.cpp"
   "ring.hpp"
+  "port.cpp"
   "port.hpp"
   "zero.cpp"
   "zero.hpp"
