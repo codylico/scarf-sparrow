@@ -1,5 +1,6 @@
 
 #include "internal/pad_struct.h"
+#include "pad.h"
 #include <allegro5/allegro.h>
 #include <CoreMIDI/CoreMIDI.h>
 #include <time.h>
@@ -62,17 +63,15 @@ static int ssmidi_pad_get_packet(struct ssmidi_pad_osx* pad, MIDIEventPacket* pa
   return 0;
 }
 
-static void decode_note(UInt32 word)
+static void ssmidi_decode_note(struct ssmidi_pad_osx* pad, MIDITimeStamp ts, UInt32 word)
 {
-  switch ((word >> 16)&240u)
-  {
-  case 0x90:
-    fprintf(stderr, "on [%2u] %2u (%3u)\n", (word>>16)&15u, (word >> 8)&255u, word&255u);
-    break;
-  case 0x80:
-    fprintf(stderr, "off[%2u] %2u (%3u)\n", (word>>16)&15u, (word >> 8)&255u, word&255u);
-    break;
-  }
+  struct SSMIDI_PAD_NOTE note = {0};
+  note.timestamp = ts;
+  // mach_absolute_time();
+  note.cmd = (unsigned char)((word>>16)&255u);
+  note.args[0] = (unsigned char)((word>>8) & 255u);
+  note.args[1] = (unsigned char)((word) & 255u);
+  ssmidi_pad_add_note(&pad->base, &note);
 }
 
 void* ssmidi_pad_worker_osx(ALLEGRO_THREAD *th, void *pad_ptr)
@@ -150,8 +149,16 @@ void* ssmidi_pad_worker_osx(ALLEGRO_THREAD *th, void *pad_ptr)
     while (ssmidi_pad_get_packet(pad, &next))
     {
       fprintf(stderr, "ts: %#llx\n", next.timeStamp);
-      decode_note(next.words[0]);
+      ssmidi_decode_note(pad, next.timeStamp, next.words[0]);
       count += 1;
+    }
+    if (count > 0)
+    {
+      ALLEGRO_EVENT ev = {0};
+      ev.user.type = ALLEGRO_GET_EVENT_TYPE('S','S','M','%');
+      ev.user.data1 = count;
+      ev.user.data2 = (next.words[0] & 0xFFffFF);
+      al_emit_user_event(&pad->base.event_source, &ev, NULL);
     }
   }
   al_unlock_mutex(pad->osx_mx);
