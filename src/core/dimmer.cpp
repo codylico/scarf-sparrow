@@ -1,5 +1,6 @@
 #include "dimmer.hpp"
 #include "sample.hpp"
+#include <iostream>
 #include <cstring>
 #include <cmath>
 
@@ -10,10 +11,17 @@ namespace ScarfSparrow
     PortInfo{ PortType::MIDIArg2, 1},
   }};
 
-#pragma region "ScarfSparrow/DimmerNode / implementation(Node)"
-  DimmerNode::DimmerNode(float scale, float shift)
-    : volume_scale(scale), volume_shift(shift)
+#pragma region "ScarfSparrow/DimmerNode / methods"
+  DimmerNode::DimmerNode(float scale, float shift, bool monochrome)
+    : volume_scale(scale), volume_shift(shift), monochrome_(monochrome)
   {
+  }
+  Sample DimmerNode::dithered(Sample vol) const noexcept
+  {
+    std::cerr << (vol & 127u) << std::endl;
+    if (!monochrome_)
+      return vol;
+    return (vol & 127u) ? 0x140 : 0x100;
   }
 #pragma endregion
 #pragma region "ScarfSparrow/DimmerNode / implementation(Node)"
@@ -46,7 +54,7 @@ namespace ScarfSparrow
     {
       if (auto const next_vol = notes_data.at_or_zero(i))
       {
-        volume_last = next_vol;
+        volume_last = dithered(next_vol);
         volume = sampleToVolume(volume_last) * volume_scale + volume_shift;
       }
       front[i] = sampleFromUnitChecked(volume * sampleToUnit(in_data[i]));
@@ -55,7 +63,7 @@ namespace ScarfSparrow
     {
       front[i] = 0;
       if (auto const next_vol = notes_data.at_or_zero(i))
-        volume_last = next_vol;
+        volume_last = dithered(next_vol);
     }
     volume = sampleToVolume(volume_last) * volume_scale + volume_shift;
     return static_cast<unsigned>(front.size());

@@ -25,7 +25,19 @@ int main(int argc, char**argv)
 {
   constexpr unsigned batch_size = 2048;
   constexpr unsigned concurrency = 8;
-  if (argc < 2)
+  std::string device_name;
+  bool mono_mode = false;
+  for (int argi = 1; argi < argc; ++argi)
+  {
+    if (argv[argi][0] == '-')
+    {
+      if (std::strcmp(argv[argi], "--mono") == 0)
+        mono_mode = true;
+    }
+    else if (device_name.empty())
+      device_name = argv[argi];
+  }
+  if (device_name.empty())
   {
     std::cerr << "usage: scarfsparrow_ex_polypad (device_name)" << std::endl;
     return EXIT_FAILURE;
@@ -39,7 +51,7 @@ int main(int argc, char**argv)
     return EXIT_FAILURE;
   }
 
-  auto pad = std::make_unique<Scarf::MidiPadNode>(argv[1], batch_size);
+  auto pad = std::make_unique<Scarf::MidiPadNode>(device_name, batch_size);
 
   auto const q = Scarf::util_makeEventQueue();
   assert(q);
@@ -71,7 +83,7 @@ int main(int argc, char**argv)
     auto saw_name = "saw_" + std::to_string(j);
     auto dimmer_name = "dimmer_" + std::to_string(j);
     graph.addNode(std::make_unique<Scarf::SawNode>(), saw_name);
-    graph.addNode(std::make_unique<Scarf::DimmerNode>(1.0f/concurrency), dimmer_name);
+    graph.addNode(std::make_unique<Scarf::DimmerNode>(1.0f/concurrency, 0.f, mono_mode), dimmer_name);
     graph.connect({"polyphony", 0+j*2}, {saw_name,0});
     graph.connect({saw_name, 0}, {dimmer_name,0});
     graph.connect({"polyphony", 1+j*2}, {dimmer_name,1});

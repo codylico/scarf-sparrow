@@ -11,8 +11,9 @@ namespace ScarfSparrow
     float volume_scale = 1.0f;
     float volume_shift = 0.0f;
     Sample volume_last = {};
+    bool monochrome_ = false;
   public:
-    explicit DimmerNode(float scale = 1.0f, float shift = 0.f);
+    explicit DimmerNode(float scale = 1.0f, float shift = 0.f, bool monochrome = false);
     unsigned countInputs() const noexcept override;
     PortInfo describeInput(unsigned i) const noexcept override;
     unsigned countOutputs() const noexcept override;
@@ -21,6 +22,8 @@ namespace ScarfSparrow
     virtual bool do_configure(std::string_view json) override;
     virtual unsigned do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept override;
+  private:
+    Sample dithered(Sample vol) const noexcept;
   };
 }
 
