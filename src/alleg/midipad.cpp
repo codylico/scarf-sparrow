@@ -3,6 +3,7 @@
 #include "../midi/pad.h"
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro.h>
+#include <limits>
 #include <array>
 #include <iostream>
 
@@ -77,15 +78,21 @@ namespace ScarfSparrow
       }
       auto const pos = timestampToSample(info, next_note.timestamp);
       auto biased_pos = pos - sample_scope;
-      if (sample_scope + bump - pos < primary_size)
+      if (sample_scope + bump - pos < (std::numeric_limits<unsigned>::max())/2)
       {
+        // In the past; bring to the bump.
         biased_pos = bump;
       }
       else if (biased_pos >= primary.size())
       {
-        // Dropped note. Too bad.
-        dropped_notes += 1;
-        continue;
+        if ((next_note.cmd & 0xF0) == 0x90)
+        {
+          // Dropped note. Too bad.
+          dropped_notes += 1;
+          continue;
+        }
+        // Don't drop note off events.
+        biased_pos = bump;
       }
       primary[biased_pos] = (next_note.cmd << 8) | next_note.args[0];
       if (biased_pos < secondary.size())
