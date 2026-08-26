@@ -18,7 +18,6 @@ namespace ScarfSparrow
   }
   Sample DimmerNode::dithered(Sample vol) const noexcept
   {
-    std::cerr << (vol & 127u) << std::endl;
     if (!monochrome_)
       return vol;
     return (vol & 127u) ? 0x140 : 0x100;

@@ -60,6 +60,7 @@ int main(int argc, char**argv)
   // Make the voice.
   al_reserve_samples(0);
   al_attach_audio_stream_to_mixer(stream->get(), al_get_default_mixer());
+  auto* const stream_ptr = stream->get();
 
 
   // Make the graph.
@@ -89,7 +90,8 @@ int main(int argc, char**argv)
   }
 
   // Event loop.
-  Scarf::util_runEventQueue(graph, q.get());
+  Scarf::util_runEventQueue(graph, q.get(), stream_ptr);
+  al_drain_audio_stream(stream_ptr);
   std::cerr << "Done." << std::endl;
   return EXIT_SUCCESS;
 }
