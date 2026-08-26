@@ -20,7 +20,7 @@ namespace ScarfSparrow
     return EventQueuePtr(al_create_event_queue());
   }
 
-  bool util_runEventQueue(Graph& g, ALLEGRO_EVENT_QUEUE* q)
+  bool util_runEventQueue(Graph& g, ALLEGRO_EVENT_QUEUE* q, ALLEGRO_AUDIO_STREAM* stream)
   {
     bool done = false;
     while (!done)
@@ -29,7 +29,12 @@ namespace ScarfSparrow
       al_wait_for_event_timed(q, &ev, 1.0f);
       if (ev.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
       {
-        g.step();
+        // If no stream given, just blindly fill one fragment.
+        if (!stream)
+          g.step();
+        // Fill in extra fragments while here.
+        while (stream && al_get_available_audio_stream_fragments(stream) > 0)
+          g.step();
       }
       done = g.done();
     }

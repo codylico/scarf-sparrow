@@ -23,8 +23,9 @@ namespace Scarf = ScarfSparrow;
 
 int main(int argc, char**argv)
 {
-  constexpr unsigned batch_size = 2048;
+  constexpr unsigned batch_size = 1024;
   constexpr unsigned concurrency = 8;
+  constexpr unsigned batch_lag = 2;
   std::string device_name;
   bool mono_mode = false;
   for (int argi = 1; argi < argc; ++argi)
@@ -56,7 +57,7 @@ int main(int argc, char**argv)
   auto const q = Scarf::util_makeEventQueue();
   assert(q);
   Scarf::Graph graph;
-  auto stream = std::make_unique<Scarf::AllegroStreamNode>(2, batch_size);
+  auto stream = std::make_unique<Scarf::AllegroStreamNode>(batch_lag, batch_size);
   if (!stream)
   {
     std::cerr << "Failed to create audio stream." << std::endl;
@@ -73,6 +74,7 @@ int main(int argc, char**argv)
   graph.addNode(std::move(pad), "pad");
   graph.addNode(std::make_unique<Scarf::PolyphonyNode>(concurrency), "polyphony");
   graph.addNode(std::make_unique<Scarf::SumNode>(concurrency), "sum");
+  auto const stream_ptr = stream->get();
   graph.addNode(std::move(stream), "al_out");
   graph.connect({"pad", 0}, {"polyphony",0});
   graph.connect({"pad", 1}, {"polyphony",1});
@@ -96,7 +98,7 @@ int main(int argc, char**argv)
   }
 
   // Event loop.
-  Scarf::util_runEventQueue(graph, q.get());
+  Scarf::util_runEventQueue(graph, q.get(), stream_ptr);
   std::cerr << "Done." << std::endl;
   return EXIT_SUCCESS;
 }
