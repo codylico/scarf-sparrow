@@ -1,10 +1,12 @@
 #pragma once
 #include "../core/node.hpp"
 #include <string>
+#include <array>
 #include <memory>
 #include <cstddef>
 
 struct SSMIDI_PAD;
+struct SSMIDI_PAD_NOTE;
 
 namespace ScarfSparrow
 {
@@ -16,6 +18,8 @@ namespace ScarfSparrow
       void operator()(SSMIDI_PAD*) const noexcept;
     };
     std::unique_ptr<SSMIDI_PAD, Deleter> ptr;
+    static constexpr unsigned UngetSize = 8;
+    std::array<char,UngetSize> unget_stash;
     unsigned batch_size = 0;
     bool started = false;
     unsigned sample_scope = 0;
@@ -35,5 +39,7 @@ namespace ScarfSparrow
       SampleInfo const& info) noexcept override;
   private:
     unsigned timestampToSample(SampleInfo const& info, unsigned x) noexcept;
+    bool unstash(SSMIDI_PAD_NOTE& note) noexcept;
+    void stash(SSMIDI_PAD_NOTE const& note) noexcept;
   };
 }

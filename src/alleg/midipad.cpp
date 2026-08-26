@@ -5,6 +5,7 @@
 #include <allegro5/allegro.h>
 #include <limits>
 #include <array>
+#include <utility>
 #include <iostream>
 
 namespace ScarfSparrow
@@ -24,7 +25,7 @@ namespace ScarfSparrow
 
 #pragma region "ScarfSparrow/MidiPadNode / methods"
   MidiPadNode::MidiPadNode(std::string const& addr, unsigned frag_samples)
-  : ptr(ssmidi_create_pad(addr.c_str())),
+  : ptr(ssmidi_create_pad(addr.c_str())), unget_stash{},
     batch_size(frag_samples)
   {
   }
@@ -33,6 +34,25 @@ namespace ScarfSparrow
   {
     return static_cast<unsigned>(
       ((x - pad_anchor) * static_cast<unsigned long long>(info.hz)) / 65536);
+  }
+
+  bool MidiPadNode::unstash(SSMIDI_PAD_NOTE& note) noexcept
+  {
+    SSMIDI_PAD_NOTE xnote = {};
+    std::memcpy(&xnote, unget_stash.data(), sizeof(SSMIDI_PAD_NOTE));
+    if (xnote.cmd)
+    {
+      note = xnote;
+      std::memset(unget_stash.data(), 0, unget_stash.size());
+      return true;
+    }
+    return ssmidi_pad_get_note(ptr.get(), &note);
+  }
+  void MidiPadNode::stash(SSMIDI_PAD_NOTE const& note) noexcept
+  {
+    static_assert(UngetSize >= sizeof(SSMIDI_PAD_NOTE),
+        "Stash needs be big enough to hold a note.");
+    std::memcpy(unget_stash.data(), &note, sizeof(SSMIDI_PAD_NOTE));
   }
 #pragma endregion
 
@@ -68,7 +88,7 @@ namespace ScarfSparrow
     auto& secondary = outputs[1];
     unsigned bump = 0;
     auto const primary_size = primary.size();
-    while (ssmidi_pad_get_note(ptr.get(), &next_note))
+    while (unstash(next_note))
     {
       if (!started)
       {
@@ -85,14 +105,8 @@ namespace ScarfSparrow
       }
       else if (biased_pos >= primary.size())
       {
-        if ((next_note.cmd & 0xF0) == 0x90)
-        {
-          // Dropped note. Too bad.
-          dropped_notes += 1;
-          continue;
-        }
-        // Don't drop note off events.
-        biased_pos = bump;
+        stash(next_note);
+        break;
       }
       primary[biased_pos] = (next_note.cmd << 8) | next_note.args[0];
       if (biased_pos < secondary.size())
