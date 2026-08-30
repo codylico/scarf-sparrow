@@ -23,9 +23,9 @@ namespace Scarf = ScarfSparrow;
 
 int main(int argc, char**argv)
 {
-  constexpr unsigned batch_size = 1024;
+  constexpr unsigned batch_size = 512;
   constexpr unsigned concurrency = 8;
-  constexpr unsigned batch_lag = 2;
+  constexpr unsigned batch_lag = 4;
   std::string device_name;
   bool mono_mode = false;
   for (int argi = 1; argi < argc; ++argi)

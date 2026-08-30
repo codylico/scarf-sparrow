@@ -38,6 +38,12 @@ void ssmidi_pad_add_note(struct SSMIDI_PAD* pad, struct SSMIDI_PAD_NOTE const* p
   }
 }
 
+int ssmidi_pad_has_note_room(struct SSMIDI_PAD const* pad)
+{
+  unsigned wpos = atomic_load_explicit(&pad->wpos, memory_order_acquire);
+  unsigned rpos = atomic_load_explicit(&pad->rpos, memory_order_acquire);
+  return ((wpos - rpos) < 64);
+}
 int ssmidi_pad_get_note(struct SSMIDI_PAD* pad, struct SSMIDI_PAD_NOTE* pack)
 {
   unsigned wpos = atomic_load_explicit(&pad->wpos, memory_order_acquire);

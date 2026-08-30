@@ -31,6 +31,7 @@ int ssmidi_init_pad(struct SSMIDI_PAD* pad, char const* addr);
 void ssmidi_shutdown_pad(struct SSMIDI_PAD* pad);
 void ssmidi_fast_pad_cleanup(struct SSMIDI_PAD* pad);
 struct SSMIDI_PAD* ssmidi_pad_os_alloc(void);
+int ssmidi_pad_has_note_room(struct SSMIDI_PAD const* pad);
 void ssmidi_pad_add_note(struct SSMIDI_PAD* pad, struct SSMIDI_PAD_NOTE const* pack);
 
 #endif //hg_ScarfSparrowMidi_padStruct_h_

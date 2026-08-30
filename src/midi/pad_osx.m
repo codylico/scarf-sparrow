@@ -10,6 +10,12 @@
 #include <stddef.h>
 
 
+enum ssmidi_pad_const
+{
+  SSMIDI_PAD_RING_BITS = 6,
+  SSMIDI_PAD_RING_SIZE = (1<<SSMIDI_PAD_RING_BITS),
+  SSMIDI_PAD_RING_MASK = (SSMIDI_PAD_RING_SIZE-1),
+};
 
 struct ssmidi_pad_osx
 {
@@ -18,7 +24,7 @@ struct ssmidi_pad_osx
   ALLEGRO_COND* osx_cond;
   MIDIClientRef client;
   MIDIPortRef in_port;
-  MIDIEventPacket packets[16];
+  MIDIEventPacket packets[SSMIDI_PAD_RING_SIZE];
   _Atomic(unsigned) packet_rpos;
   _Atomic(unsigned) packet_wpos;
   struct mach_timebase_info tick_info;
@@ -45,10 +51,10 @@ static void ssmidi_pad_add_packet(struct ssmidi_pad_osx* pad, MIDIEventPacket co
     ? offsetof(MIDIEventPacket, words) + sizeof(UInt32)*pack->wordCount : sizeof(MIDIEventPacket));
   unsigned wpos = atomic_load_explicit(&pad->packet_wpos, memory_order_acquire);
   unsigned rpos = atomic_load_explicit(&pad->packet_rpos, memory_order_acquire);
-  if ((wpos - rpos) < 16)
+  if ((wpos - rpos) < SSMIDI_PAD_RING_SIZE)
   {
-    memset(&pad->packets[wpos&15], 0, sizeof(MIDIEventPacket));
-    memcpy(&pad->packets[wpos&15], pack, sz);
+    memset(&pad->packets[wpos&SSMIDI_PAD_RING_MASK], 0, sizeof(MIDIEventPacket));
+    memcpy(&pad->packets[wpos&SSMIDI_PAD_RING_MASK], pack, sz);
     atomic_fetch_add_explicit(&pad->packet_wpos, 1, memory_order_release);
   }
 }
@@ -60,7 +66,7 @@ static int ssmidi_pad_get_packet(struct ssmidi_pad_osx* pad, MIDIEventPacket* pa
   if ((wpos - rpos) > 0)
   {
     unsigned const read_anchor = atomic_fetch_add_explicit(&pad->packet_rpos, 1, memory_order_acquire);
-    memcpy(pack, &pad->packets[read_anchor&15], sizeof(MIDIEventPacket));
+    memcpy(pack, &pad->packets[read_anchor&SSMIDI_PAD_RING_MASK], sizeof(MIDIEventPacket));
     return 1;
   }
   return 0;
@@ -166,7 +172,7 @@ void* ssmidi_pad_worker_osx(ALLEGRO_THREAD *th, void *pad_ptr)
     int count = 0;
     MIDIEventPacket next = {0};
     al_wait_cond(pad->osx_cond, pad->osx_mx);
-    while (ssmidi_pad_get_packet(pad, &next))
+    while (ssmidi_pad_has_note_room(pad) && ssmidi_pad_get_packet(pad, &next))
     {
       ssmidi_decode_note(pad, next.timeStamp, next.words[0]);
       count += 1;
