@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cstring>
 #include <cctype>
+#include <cmath>
 
 namespace ScarfSparrow
 {
@@ -336,6 +337,7 @@ namespace ScarfSparrow
         break;
       }
     }
+    return {};
   }
 #pragma endregion
 }

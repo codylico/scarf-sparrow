@@ -1,4 +1,5 @@
 #include "square.hpp"
+#include <array>
 #include <cstring>
 #include <cmath>
 

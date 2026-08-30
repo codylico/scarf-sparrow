@@ -14,6 +14,7 @@
 #include <fstream>
 #include <string>
 #include <utility>
+#include <cstring>
 #include <cstdlib>
 #include <cassert>
 

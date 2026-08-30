@@ -2,6 +2,7 @@
 #include "sample.hpp"
 #include <vector>
 #include <algorithm>
+#include <array>
 #include <cstring>
 
 namespace ScarfSparrow
