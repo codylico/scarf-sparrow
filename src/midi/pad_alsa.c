@@ -25,6 +25,7 @@ struct ssmidi_pad_alsa
 	snd_seq_t* client;
 	int in_port;
 	int in_queue;
+	snd_seq_addr_t src_addr;
 	snd_seq_event_t packets[SSMIDI_PAD_RING_SIZE];
 	_Atomic(unsigned) packet_rpos;
 	_Atomic(unsigned) packet_wpos;
@@ -109,13 +110,16 @@ void* ssmidi_pad_worker_alsa(ALLEGRO_THREAD *th, void *pad_ptr)
 {
 	struct ssmidi_pad_alsa* const pad = (struct ssmidi_pad_alsa*)pad_ptr;
 	int res = 0;
+	snd_seq_addr_t sink_addr = {0};
 	al_lock_mutex(pad->alsa_mx);
-	res = snd_seq_open(&pad->client, pad->base.addr, SND_SEQ_OPEN_INPUT, 0);
+	res = snd_seq_open(&pad->client, "default", SND_SEQ_OPEN_INPUT, 0);
 	if (res < 0)
 	{
 		al_unlock_mutex(pad->alsa_mx);
 		return NULL;
 	}
+	sink_addr.client = (unsigned char)snd_seq_client_id(pad->client);
+	fprintf(stderr, "client: %i\n", sink_addr.client);
 	snd_seq_set_client_name(pad->client, "ScarfSparrow MIDI Client");
 	pad->in_port = snd_seq_create_simple_port(pad->client,
 		"ScarfSparrow MIDI Sink", SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE,
@@ -125,6 +129,7 @@ void* ssmidi_pad_worker_alsa(ALLEGRO_THREAD *th, void *pad_ptr)
 		al_unlock_mutex(pad->alsa_mx);
 		return NULL;
 	}
+	sink_addr.port = (unsigned char)pad->in_port;
 	pad->in_queue = snd_seq_alloc_named_queue(pad->client, "ScarfSparrow MIDI Queue");
 	if (pad->in_queue < 0)
 	{
@@ -136,6 +141,32 @@ void* ssmidi_pad_worker_alsa(ALLEGRO_THREAD *th, void *pad_ptr)
 	pad->poll_table = calloc(res, sizeof(struct pollfd));
 	pad->poll_count = (unsigned)res;
 	snd_seq_poll_descriptors(pad->client, pad->poll_table, pad->poll_count, POLLIN);
+
+	// Parse the source address.
+	if (snd_seq_parse_address(pad->client, &pad->src_addr, pad->base.addr) < 0)
+	{
+		al_unlock_mutex(pad->alsa_mx);
+		return NULL;
+	}
+	fprintf(stderr, "addr: %u %u\n", pad->src_addr.client, pad->src_addr.port);
+
+	// Connect.
+	{
+		snd_seq_port_subscribe_t *subs;
+		snd_seq_port_subscribe_alloca(&subs);
+		snd_seq_port_subscribe_set_sender(subs, &pad->src_addr);
+		snd_seq_port_subscribe_set_dest(subs, &sink_addr);
+		snd_seq_port_subscribe_set_time_real(subs, 1);
+		snd_seq_port_subscribe_set_queue(subs, pad->in_queue);
+		snd_seq_port_subscribe_set_time_update(subs, 1);
+		if (snd_seq_subscribe_port(pad->client, subs) < 0)
+		{
+			al_unlock_mutex(pad->alsa_mx);
+			return NULL;
+		}
+	}
+	fputs("running...\n", stderr);
+
 	while (!al_get_thread_should_stop(th))
 	{
 		int count = 0;
