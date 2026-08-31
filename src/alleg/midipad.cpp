@@ -6,6 +6,7 @@
 #include <limits>
 #include <array>
 #include <utility>
+#include <cstring>
 
 namespace ScarfSparrow
 {

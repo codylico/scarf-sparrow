@@ -1,4 +1,5 @@
 #include "ring.hpp"
+#include <cstring>
 
 namespace ScarfSparrow
 {

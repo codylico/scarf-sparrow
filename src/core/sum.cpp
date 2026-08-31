@@ -2,11 +2,12 @@
 #include "sample.hpp"
 #include <vector>
 #include <algorithm>
+#include <array>
 #include <cstring>
 
 namespace ScarfSparrow
 {
-  static std::array<PortInfo,2> const polyphony_ports = {{
+  static std::array<PortInfo,2> const sum_ports = {{
     PortInfo{ PortType::PCM, 1},
     PortInfo{ PortType::MIDIArg2, 1},
   }};

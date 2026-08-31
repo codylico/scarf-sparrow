@@ -1,5 +1,6 @@
 #include "saw.hpp"
 #include "sample.hpp"
+#include <array>
 #include <cstring>
 #include <cmath>
 

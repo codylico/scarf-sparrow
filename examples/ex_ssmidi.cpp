@@ -63,10 +63,16 @@ int main(int argc, char**argv)
         switch (note.cmd&240u)
         {
         case 0x90:
-          fprintf(stderr, "on [%2u] %2u (%3u) @%g\n", note.cmd&15u, note.args[0], note.args[1], note.timestamp / 65536.0);
+          std::cerr << "on [" << (note.cmd&15u) << "] "
+            << static_cast<unsigned>(note.args[0])
+            << " (" << static_cast<unsigned>(note.args[1]) << ") @"
+            << (note.timestamp / 65536.0) << std::endl;
           break;
         case 0x80:
-          fprintf(stderr, "off[%2u] %2u (%3u) @%g\n", note.cmd&15u, note.args[0], note.args[1], note.timestamp / 65536.0);
+          std::cerr << "off [" << (note.cmd&15u) << "] "
+            << static_cast<unsigned>(note.args[0])
+            << " (" << static_cast<unsigned>(note.args[1]) << ") @"
+            << (note.timestamp / 65536.0) << std::endl;
           break;
         }
       }

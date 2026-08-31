@@ -1,6 +1,7 @@
 #include "dimmer.hpp"
 #include "sample.hpp"
 #include <iostream>
+#include <array>
 #include <cstring>
 #include <cmath>
 

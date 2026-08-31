@@ -11,6 +11,11 @@ if (APPLE)
   target_sources(scarfsparrow_midi PRIVATE
     "pad_osx.m"
   )
+elseif(LINUX)
+  target_sources(scarfsparrow_midi PRIVATE
+    "pad_alsa.c"
+  )
+  target_link_libraries(scarfsparrow_midi PUBLIC asound)
 endif()
 target_compile_features(scarfsparrow_midi PUBLIC
   cxx_std_17)
