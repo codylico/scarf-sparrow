@@ -89,7 +89,6 @@ static int ssmidi_decode_note(struct ssmidi_pad_alsa* pad, snd_seq_event_t* ev)
 	struct SSMIDI_PAD_NOTE note = {0};
 	if (!ev)
 		return 0;
-	fprintf(stderr, "\t<%u,%u>\n", ev->time.time.tv_sec, ev->time.time.tv_nsec);
 	if (!(ev->time.time.tv_sec || ev->time.time.tv_nsec))
 	{
 		// TODO: Get MIDI timestamps working properly.
@@ -211,12 +210,10 @@ void* ssmidi_pad_worker_alsa(ALLEGRO_THREAD *th, void *pad_ptr)
 			&& expect > 0)
 		{
 			expect = snd_seq_event_input(pad->client, &ev);
-			fprintf(stderr, "[%i]\n", expect);
 			count += ssmidi_decode_note(pad, ev);
 		}
 		if (count > 0)
 		{
-			fprintf(stderr, "[%+i]\n", count);
 			ALLEGRO_EVENT ev = {0};
 			ev.user.type = ALLEGRO_GET_EVENT_TYPE('S','S','M','%');
 			ev.user.data1 = count;
