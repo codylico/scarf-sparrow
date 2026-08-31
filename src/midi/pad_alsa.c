@@ -76,35 +76,38 @@ static int ssmidi_pad_get_packet(struct ssmidi_pad_alsa* pad, MIDIEventPacket* p
   }
   return 0;
 }
-
-static unsigned ssmidi_decode_timestamp(struct ssmidi_pad_alsa* pad, MIDITimeStamp ts)
-{
-  if (pad->first_stamp > 0)
-  {
-	// Normalize first...
-	long long const renorm = ts - pad->first_stamp;
-	// ...via nanoseconds...
-	long long const nano = renorm * pad->tick_info.numer / pad->tick_info.denom;
-	// ...to 32-bit stamps.
-	return (unsigned)(nano * 65536 / 1000000000LL);
-  }
-  else
-  {
-	pad->first_stamp = ts;
-	return 0;
-  }
-}
-
-static void ssmidi_decode_note(struct ssmidi_pad_alsa* pad, MIDITimeStamp ts, UInt32 word)
-{
-  struct SSMIDI_PAD_NOTE note = {0};
-  note.timestamp = ssmidi_decode_timestamp(pad, ts);
-  note.cmd = (unsigned char)((word>>16)&255u);
-  note.args[0] = (unsigned char)((word>>8) & 255u);
-  note.args[1] = (unsigned char)((word) & 255u);
-  ssmidi_pad_add_note(&pad->base, &note);
-}
 #endif //0
+
+static unsigned ssmidi_decode_timestamp(struct ssmidi_pad_alsa* pad, snd_seq_timestamp_t const* ts)
+{
+	return (unsigned)(((ts->time.tv_sec & 0xFFFFu) << 16)
+		| (ts->time.tv_nsec * 65536L / 1000000000L));
+}
+
+static int ssmidi_decode_note(struct ssmidi_pad_alsa* pad, snd_seq_event_t* ev)
+{
+	struct SSMIDI_PAD_NOTE note = {0};
+	if (!ev)
+		return 0;
+	fprintf(stderr, "\t<%u,%u>\n", ev->time.time.tv_sec, ev->time.time.tv_nsec);
+	note.timestamp = ssmidi_decode_timestamp(pad, &ev->time);
+	switch (ev->type)
+	{
+	case SND_SEQ_EVENT_NOTEOFF:
+	case SND_SEQ_EVENT_NOTEON:
+		{
+			note.cmd = (ev->type == SND_SEQ_EVENT_NOTEON ? 0x90 : 0x80)
+				| (ev->data.note.channel & 15);
+			note.args[0] = ev->data.note.note;
+			note.args[1] = (ev->type == SND_SEQ_EVENT_NOTEON ? ev->data.note.velocity : 0);
+		} break;
+	default:
+		note.cmd = (unsigned char)(ev->type & 0x7F);
+		break;
+	}
+	ssmidi_pad_add_note(&pad->base, &note);
+	return 1;
+}
 
 void* ssmidi_pad_worker_alsa(ALLEGRO_THREAD *th, void *pad_ptr)
 {
@@ -120,6 +123,7 @@ void* ssmidi_pad_worker_alsa(ALLEGRO_THREAD *th, void *pad_ptr)
 	}
 	sink_addr.client = (unsigned char)snd_seq_client_id(pad->client);
 	fprintf(stderr, "client: %i\n", sink_addr.client);
+	snd_seq_nonblock(pad->client, 1);
 	snd_seq_set_client_name(pad->client, "ScarfSparrow MIDI Client");
 	pad->in_port = snd_seq_create_simple_port(pad->client,
 		"ScarfSparrow MIDI Sink", SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE,
@@ -169,25 +173,28 @@ void* ssmidi_pad_worker_alsa(ALLEGRO_THREAD *th, void *pad_ptr)
 
 	while (!al_get_thread_should_stop(th))
 	{
+		snd_seq_event_t* ev = NULL;
+		int expect = 1;
 		int count = 0;
 		struct timespec ts = {0};
 		unsigned short revents = 0;
 		ts.tv_sec = 1;
 		poll(pad->poll_table, pad->poll_count, 1000);
 		if (snd_seq_poll_descriptors_revents(pad->client, pad->poll_table,
-			pad->poll_count, &revents) == 0 && (revents & POLLIN))
+			pad->poll_count, &revents) != 0 || !(revents & POLLIN))
 		{
-			fputs("something\n", stderr);
-			;
+			continue;
 		}
-		// MIDIEventPacket next = {0};
-		/*while (ssmidi_pad_has_note_room(pad) && ssmidi_pad_get_packet(pad, &next))
+		while (ssmidi_pad_has_note_room(&pad->base)
+			&& expect > 0)
 		{
-			ssmidi_decode_note(pad, next.timeStamp, next.words[0]);
-			count += 1;
-		}*/
+			expect = snd_seq_event_input(pad->client, &ev);
+			fprintf(stderr, "[%i]\n", expect);
+			count += ssmidi_decode_note(pad, ev);
+		}
 		if (count > 0)
 		{
+			fprintf(stderr, "[%+i]\n", count);
 			ALLEGRO_EVENT ev = {0};
 			ev.user.type = ALLEGRO_GET_EVENT_TYPE('S','S','M','%');
 			ev.user.data1 = count;
