@@ -172,7 +172,7 @@ void* ssmidi_pad_worker_osx(ALLEGRO_THREAD *th, void *pad_ptr)
     int count = 0;
     MIDIEventPacket next = {0};
     al_wait_cond(pad->osx_cond, pad->osx_mx);
-    while (ssmidi_pad_has_note_room(pad) && ssmidi_pad_get_packet(pad, &next))
+    while (ssmidi_pad_has_note_room(&pad->base) && ssmidi_pad_get_packet(pad, &next))
     {
       ssmidi_decode_note(pad, next.timeStamp, next.words[0]);
       count += 1;
