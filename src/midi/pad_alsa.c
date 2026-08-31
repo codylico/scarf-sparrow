@@ -90,6 +90,14 @@ static int ssmidi_decode_note(struct ssmidi_pad_alsa* pad, snd_seq_event_t* ev)
 	if (!ev)
 		return 0;
 	fprintf(stderr, "\t<%u,%u>\n", ev->time.time.tv_sec, ev->time.time.tv_nsec);
+	if (!(ev->time.time.tv_sec || ev->time.time.tv_nsec))
+	{
+		// TODO: Get MIDI timestamps working properly.
+		struct timespec ts = {0};
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		ev->time.time.tv_sec = (unsigned)ts.tv_sec;
+		ev->time.time.tv_nsec = (unsigned)ts.tv_nsec;
+	}
 	note.timestamp = ssmidi_decode_timestamp(pad, &ev->time);
 	switch (ev->type)
 	{
@@ -125,13 +133,21 @@ void* ssmidi_pad_worker_alsa(ALLEGRO_THREAD *th, void *pad_ptr)
 	fprintf(stderr, "client: %i\n", sink_addr.client);
 	snd_seq_nonblock(pad->client, 1);
 	snd_seq_set_client_name(pad->client, "ScarfSparrow MIDI Client");
-	pad->in_port = snd_seq_create_simple_port(pad->client,
-		"ScarfSparrow MIDI Sink", SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE,
-		SND_SEQ_PORT_TYPE_MIDI_GENERIC);
-	if (pad->in_port < 0)
 	{
-		al_unlock_mutex(pad->alsa_mx);
-		return NULL;
+		snd_seq_port_info_t* info = NULL;
+		snd_seq_port_info_alloca(&info);
+		snd_seq_port_info_set_timestamp_queue(info, pad->in_queue);
+		snd_seq_port_info_set_timestamping(info, 1);
+		snd_seq_port_info_set_timestamp_real(info, 1);
+		snd_seq_port_info_set_name(info, "ScarfSparrow MIDI Sink");
+		snd_seq_port_info_set_capability(info, SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE);
+		snd_seq_port_info_set_type(info, SND_SEQ_PORT_TYPE_MIDI_GENERIC);
+		pad->in_port = snd_seq_create_port(pad->client, info);
+		if (pad->in_port < 0)
+		{
+			al_unlock_mutex(pad->alsa_mx);
+			return NULL;
+		}
 	}
 	sink_addr.port = (unsigned char)pad->in_port;
 	pad->in_queue = snd_seq_alloc_named_queue(pad->client, "ScarfSparrow MIDI Queue");
@@ -169,7 +185,13 @@ void* ssmidi_pad_worker_alsa(ALLEGRO_THREAD *th, void *pad_ptr)
 			return NULL;
 		}
 	}
+	snd_seq_start_queue(pad->client, pad->in_queue, NULL);
+	snd_seq_drain_output(pad->client);
 	fputs("running...\n", stderr);
+
+	// Enable timestamps.
+	{
+	}
 
 	while (!al_get_thread_should_stop(th))
 	{
@@ -265,7 +287,7 @@ void ssmidi_fast_pad_cleanup(struct SSMIDI_PAD* pad)
   }
   if (expad->in_port >= 0)
   {
-	snd_seq_delete_simple_port(expad->client, expad->in_port);
+	snd_seq_delete_port(expad->client, expad->in_port);
 	expad->in_port = -1;
   }
   if (expad->client)
