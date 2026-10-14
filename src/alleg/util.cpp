@@ -30,10 +30,8 @@ namespace ScarfSparrow
       if (ev.type == ALLEGRO_EVENT_AUDIO_STREAM_FRAGMENT)
       {
         // If no stream given, just blindly fill one fragment.
-        if (!stream)
-          g.step();
-        // Fill in extra fragments while here.
-        while (stream && al_get_available_audio_stream_fragments(stream) > 0)
+        unsigned const fragment_count = (stream ? al_get_available_audio_stream_fragments(stream) : 1);
+        for (unsigned j = 0; j < fragment_count; ++j)
           g.step();
       }
       done = g.done();
