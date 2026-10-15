@@ -20,7 +20,7 @@ namespace ScarfSparrow
     PortInfo describeOutput(unsigned i) const noexcept override;
     std::size_t countDroppedNotes() const noexcept { return dropped_notes; }
   protected:
-    virtual bool do_configure(std::string_view json) override;
+    virtual bool do_configure(std::string_view json, Factory const& factory) override;
     virtual unsigned do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept override;
   private:

@@ -57,7 +57,7 @@ namespace ScarfSparrow
     }
     return static_cast<unsigned>(front.size());
   }
-  bool SquareNode::do_configure(std::string_view json)
+  bool SquareNode::do_configure(std::string_view json, Factory const& factory)
   {
     return true;
   }

@@ -7,6 +7,8 @@
 
 namespace ScarfSparrow
 {
+  class Factory;
+
   /** End-of-file signal from a node. */
   enum class NodeEndMark : signed char
   {
@@ -25,7 +27,7 @@ namespace ScarfSparrow
     bool once = false;
   public:
     virtual ~Node() = default;
-    bool configure(std::string_view json);
+    bool configure(std::string_view json, Factory const& toolbox);
     virtual unsigned countInputs() const noexcept = 0;
     virtual PortInfo describeInput(unsigned i) const noexcept = 0;
     virtual unsigned countOutputs() const noexcept = 0;
@@ -41,7 +43,7 @@ namespace ScarfSparrow
       SampleInfo const& info) noexcept;
     virtual bool reserveSamples(unsigned samples_per_frame);
   protected:
-    virtual bool do_configure(std::string_view json);
+    virtual bool do_configure(std::string_view json, Factory const& factory);
     virtual unsigned do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept = 0;
   };
