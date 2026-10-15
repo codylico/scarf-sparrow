@@ -39,6 +39,7 @@ namespace ScarfSparrow
     */
     unsigned run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept;
+    virtual bool reserveSamples(unsigned samples_per_frame);
   protected:
     virtual bool do_configure(std::string_view json);
     virtual unsigned do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,

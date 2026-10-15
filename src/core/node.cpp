@@ -29,5 +29,10 @@ namespace ScarfSparrow
   {
     return true;
   }
+
+  bool Node::reserveSamples(unsigned samples_per_frame)
+  {
+    return true;
+  }
 #pragma endregion
 }

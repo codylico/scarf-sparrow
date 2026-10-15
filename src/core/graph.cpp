@@ -67,11 +67,9 @@ namespace ScarfSparrow
     return std::numeric_limits<unsigned>::max();
   }
 
-  bool Graph::start(unsigned samples_per_frame)
+  unsigned short Graph::assessSamples() const
   {
-    auto actual = std::min<unsigned short>(samples_per_frame,
-        std::numeric_limits<unsigned short>::max());
-    // Normalize batch size.
+    unsigned short actual = 0;
     for (auto const& box : boxes)
     {
       for (std::size_t i = 0; i < box.input_links.size(); ++i)
@@ -87,6 +85,12 @@ namespace ScarfSparrow
           actual = want_batch.batch_size;
       }
     }
+    return actual;
+  }
+  bool Graph::start(unsigned samples_per_frame)
+  {
+    // Normalize batch size.
+    auto actual = std::min<unsigned short>(samples_per_frame, assessSamples());
     if (actual == 0)
       actual = 1;
     unsigned depth_index = 0;
@@ -141,6 +145,11 @@ namespace ScarfSparrow
     full_end = false;
     zeroes.resize(actual);
     std::fill(zeroes.begin(), zeroes.end(), 0);
+    for (auto const& box : boxes)
+    {
+      if (!box.node->reserveSamples(actual))
+        return false;
+    }
     return true;
   }
 
