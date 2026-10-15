@@ -26,6 +26,8 @@ set(ScarfSparrow_Core_SOURCES
   "polyphony.hpp"
   "sum.cpp"
   "sum.hpp"
+  "subgraph.cpp"
+  "subgraph.hpp"
 )
 
 add_library(scarfsparrow_core STATIC "${ScarfSparrow_Core_SOURCES}")

@@ -32,6 +32,8 @@ namespace ScarfSparrow
     using value_type = t;
     constexpr PortSpan() = default;
     constexpr PortSpan(t* dta, std::size_t sz) : p(dta), len(sz) {}
+    t* begin() const noexcept { return p; }
+    t* end() const noexcept { return p+len; }
     t* data() const noexcept { return p; }
     std::size_t size() const noexcept { return len; }
     t& operator[](std::size_t i) const noexcept { return p[i]; }
