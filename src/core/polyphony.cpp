@@ -112,7 +112,7 @@ namespace ScarfSparrow
     }
     return static_cast<unsigned>(in_data.size());
   }
-  bool PolyphonyNode::do_configure(std::string_view json)
+  bool PolyphonyNode::do_configure(std::string_view json, Factory const& factory)
   {
     return true;
   }

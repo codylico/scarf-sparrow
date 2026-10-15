@@ -28,6 +28,8 @@ set(ScarfSparrow_Core_SOURCES
   "sum.hpp"
   "subgraph.cpp"
   "subgraph.hpp"
+  "factory.cpp"
+  "factory.hpp"
 )
 
 add_library(scarfsparrow_core STATIC "${ScarfSparrow_Core_SOURCES}")

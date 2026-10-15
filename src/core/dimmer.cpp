@@ -67,7 +67,7 @@ namespace ScarfSparrow
     volume = sampleToVolume(volume_last) * volume_scale + volume_shift;
     return static_cast<unsigned>(front.size());
   }
-  bool DimmerNode::do_configure(std::string_view json)
+  bool DimmerNode::do_configure(std::string_view json, Factory const& factory)
   {
     return true;
   }
