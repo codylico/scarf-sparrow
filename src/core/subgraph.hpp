@@ -2,6 +2,10 @@
 #include "node.hpp"
 #include "graph.hpp"
 
+namespace json11
+{
+  class Json;
+}
 namespace ScarfSparrow
 {
   class SubgraphNode : public Node
@@ -9,8 +13,8 @@ namespace ScarfSparrow
   private:
     class Spanner;
     std::unique_ptr<Graph> graph;
-    std::vector<std::unique_ptr<Spanner>> in_spans;
-    std::vector<std::unique_ptr<Spanner>> out_spans;
+    std::vector<Spanner*> in_spans;
+    std::vector<Spanner*> out_spans;
   public:
     SubgraphNode() = default;
     unsigned countInputs() const noexcept override;
@@ -20,7 +24,9 @@ namespace ScarfSparrow
     bool reserveSamples(unsigned samples_per_frame) override;
     NodeEndMark endOfOutput() const noexcept override;
   protected:
+    bool do_configure(std::string_view json, Factory const& toolbox) override;
     unsigned do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
-      SampleInfo const& info) noexcept;
+      SampleInfo const& info) noexcept override;
+    bool pre_add(json11::Json const& info, bool dir, Graph& g, std::vector<Spanner*>& stash);
   };
 }

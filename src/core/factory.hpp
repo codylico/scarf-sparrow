@@ -16,6 +16,6 @@ namespace ScarfSparrow
     std::unordered_map<std::string, value_type> store;
   public:
     void add(std::string_view key, value_type f);
-    std::unique_ptr<Node> make(std::string_view key);
+    std::unique_ptr<Node> make(std::string_view key) const;
   };
 }

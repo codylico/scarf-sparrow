@@ -1,5 +1,6 @@
 
 #include "factory.hpp"
+#include "node.hpp"
 #include <unordered_map>
 #include <string>
 
@@ -11,7 +12,7 @@ namespace ScarfSparrow
     store[std::string(key)] = f;
   }
 
-  std::unique_ptr<Node> Factory::make(std::string_view key)
+  std::unique_ptr<Node> Factory::make(std::string_view key) const
   {
     auto const it = store.find(std::string(key));
     if (it == store.end() || !it->second)
