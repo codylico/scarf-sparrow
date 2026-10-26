@@ -29,6 +29,7 @@ set(ScarfSparrow_Core_SOURCES
   "subgraph.cpp"
   "subgraph.hpp"
   "factory.cpp"
+  "factory_util.cpp"
   "factory.hpp"
 )
 
@@ -38,4 +39,5 @@ if (UNIX)
   target_link_libraries(scarfsparrow_core PUBLIC "${unix_math}")
 endif ()
 
+target_link_libraries(scarfsparrow_core PRIVATE json11)
 target_compile_features(scarfsparrow_core PUBLIC cxx_std_17)

@@ -1,0 +1,25 @@
+{
+  "inputs": [
+    { "name": "key", "type": "midi" },
+    { "name": "volume", "type": "midi-arg2" }
+  ],
+  "outputs": [
+    { "name": "audio", "type": "pcm" }
+  ],
+  "nodes": [
+    {
+      "name": "saw",
+      "class": "ScarfSparrow::SawNode"
+    },
+    {
+      "name": "dimmer",
+      "class": "ScarfSparrow::DimmerNode"
+    }
+  ],
+  "edges": [
+    { "source": "key", "sink": "saw:0" },
+    { "source": "volume", "sink": "dimmer:1" },
+    { "source": "saw:0", "sink": "dimmer:0" },
+    { "source": "dimmer:0", "sink": "audio" }
+  ]
+}

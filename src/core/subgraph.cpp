@@ -149,7 +149,7 @@ namespace ScarfSparrow
 
     auto const input_list_it = items.find("inputs");
     auto const output_list_it = items.find("outputs");
-    if (input_list_it != items.end() && !pre_add(input_list_it->second, false, *new_graph, new_in_spans))
+    if (input_list_it != items.end() && !pre_add(input_list_it->second, true, *new_graph, new_in_spans))
       return false;
     if (output_list_it != items.end() && !pre_add(output_list_it->second, false, *new_graph, new_out_spans))
       return false;
