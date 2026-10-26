@@ -269,6 +269,7 @@ namespace ScarfSparrow
       node->info.typ = portTypeFromString(type);
       node->info.batch_size = 1;
       node->output = dir;
+      node->stash.resize(1, 0);
       auto const ptr = node.get();
       // Grab the name.
       g.addNode(std::move(node), name);
