@@ -32,6 +32,7 @@ namespace ScarfSparrow
     PortInfo describeOutput(unsigned i) const noexcept override;
     unsigned do_run(std::vector<PortInput> const& inputs, std::vector<PortOutput> const& outputs,
       SampleInfo const& info) noexcept override;
+    bool reserveSamples(unsigned samples_per_frame) override;
   };
 
   GraphPortDesc subport_parse(std::string const& v)
@@ -65,6 +66,12 @@ namespace ScarfSparrow
   PortInfo SubgraphNode::Spanner::describeOutput(unsigned i) const noexcept
   {
     return info;
+  }
+
+  bool SubgraphNode::Spanner::reserveSamples(unsigned samples_per_frame)
+  {
+    stash.resize(samples_per_frame);
+    return true;
   }
 
   unsigned SubgraphNode::Spanner::do_run(std::vector<PortInput> const& inputs,
