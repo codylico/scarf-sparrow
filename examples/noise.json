@@ -1,7 +1,6 @@
 {
   "inputs": [
-    { "name": "key", "type": "midi" },
-    { "name": "volume", "type": "midi-arg2" }
+    { "name": "key", "type": "midi" }
   ],
   "outputs": [
     { "name": "audio", "type": "pcm" }

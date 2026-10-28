@@ -120,10 +120,11 @@ int main(int argc, char**argv)
       std::cerr << "Configuration failed." << std::endl;
       return EXIT_FAILURE;
     }
-    bool const need_dimmer = (subgraph->countInputs() > 1);
+    bool const need_dimmer = (subgraph->countInputs() <= 1);
     graph.addNode(std::move(subgraph), subgraph_name);
     if (need_dimmer)
     {
+      // Add a basic MIDI-powered dimmer.
       graph.addNode(std::make_unique<Scarf::DimmerNode>(1.0f/concurrency, 0.f, mono_mode), dimmer_name);
       graph.connect({"polyphony", 0+j*2}, {subgraph_name,0});
       graph.connect({subgraph_name, 0}, {dimmer_name,0});
@@ -132,9 +133,12 @@ int main(int argc, char**argv)
     }
     else
     {
+      // Rescale to number of concurrent notes.
+      graph.addNode(std::make_unique<Scarf::DimmerNode>(0.f, 1.0f/concurrency), dimmer_name);
       graph.connect({"polyphony", 0+j*2}, {subgraph_name,0});
+      graph.connect({subgraph_name, 0}, {dimmer_name,0});
       graph.connect({"polyphony", 1+j*2}, {subgraph_name,1});
-      graph.connect({subgraph_name, 0}, {"sum",j});
+      graph.connect({dimmer_name, 0}, {"sum",j});
     }
   }
   if (!graph.start(batch_size))
