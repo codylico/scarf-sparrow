@@ -90,7 +90,9 @@ namespace ScarfSparrow
   bool Graph::start(unsigned samples_per_frame)
   {
     // Normalize batch size.
-    auto actual = std::min<unsigned short>(samples_per_frame, assessSamples());
+    auto clamped_per_frame = std::min<unsigned short>(samples_per_frame,
+        std::numeric_limits<unsigned short>::max());
+    auto actual = std::max<unsigned short>(clamped_per_frame, assessSamples());
     if (actual == 0)
       actual = 1;
     unsigned depth_index = 0;
