@@ -24,12 +24,18 @@ endif()
 
 add_library(json11 json11.cpp)
 target_include_directories(json11 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_options(json11
-  PRIVATE -fPIC -fno-rtti -fno-exceptions -Wall)
+if (NOT MSVC)
+    target_compile_options(json11
+        PRIVATE -fPIC -fno-rtti -fno-exceptions -Wall)
+endif()
 
 # Set warning flags, which may vary per platform
 include(CheckCXXCompilerFlag)
-set(_possible_warnings_flags /W4 /WX -Wextra -Werror)
+if (MSVC)
+    set(_possible_warnings_flags /W4 /WX)
+else()
+    set(_possible_warnings_flags -Wextra -Werror)
+endif()
 foreach(_warning_flag ${_possible_warnings_flags})
   unset(_flag_supported)
   CHECK_CXX_COMPILER_FLAG(${_warning_flag} _flag_supported)
