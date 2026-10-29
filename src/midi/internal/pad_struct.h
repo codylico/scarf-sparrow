@@ -18,8 +18,8 @@ struct SSMIDI_PAD
   struct ALLEGRO_THREAD* worker;
   int done;
 #if (defined _WIN32)
-  unsigned rpos;
-  unsigned wpos;
+  unsigned volatile rpos;
+  unsigned volatile wpos;
 #else
   _Atomic(unsigned) rpos;
   _Atomic(unsigned) wpos;
