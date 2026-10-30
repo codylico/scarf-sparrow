@@ -20,6 +20,7 @@
  */
 
 #include "json11.hpp"
+#include <cstdint>
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
