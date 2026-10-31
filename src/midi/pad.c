@@ -1,6 +1,17 @@
 
 #include "internal/pad_struct.h"
 #include <stdlib.h>
+#if (defined _WIN32)
+#  include <intrin.h>
+#endif //_WIN32
+
+#if (defined _WIN32)
+#  define ssmidi_atomic_load(x) (x)
+#  define ssmidi_atomic_add_rel(x) _InterlockedIncrement(&x)
+#else
+#  define ssmidi_atomic_load(x) atomic_load_explicit(&(x), memory_order_acquire)
+#  define ssmidi_atomic_add_rel(x) atomic_fetch_add_explicit(&(x), 1, memory_order_release)
+#endif //_WIN32
 
 struct SSMIDI_PAD* ssmidi_create_pad(char const* addr)
 {
@@ -29,29 +40,29 @@ void ssmidi_destroy_pad(struct SSMIDI_PAD* pad)
 
 void ssmidi_pad_add_note(struct SSMIDI_PAD* pad, struct SSMIDI_PAD_NOTE const* pack)
 {
-  unsigned wpos = atomic_load_explicit(&pad->wpos, memory_order_acquire);
-  unsigned rpos = atomic_load_explicit(&pad->rpos, memory_order_acquire);
+  unsigned wpos = ssmidi_atomic_load(pad->wpos);
+  unsigned rpos = ssmidi_atomic_load(pad->rpos);
   if ((wpos - rpos) < 64)
   {
     memcpy(&pad->q[wpos&63], pack, sizeof(struct SSMIDI_PAD_NOTE));
-    atomic_fetch_add_explicit(&pad->wpos, 1, memory_order_release);
+    ssmidi_atomic_add_rel(pad->wpos);
   }
 }
 
 int ssmidi_pad_has_note_room(struct SSMIDI_PAD const* pad)
 {
-  unsigned wpos = atomic_load_explicit(&pad->wpos, memory_order_acquire);
-  unsigned rpos = atomic_load_explicit(&pad->rpos, memory_order_acquire);
+  unsigned wpos = ssmidi_atomic_load(pad->wpos);
+  unsigned rpos = ssmidi_atomic_load(pad->rpos);
   return ((wpos - rpos) < 64);
 }
 int ssmidi_pad_get_note(struct SSMIDI_PAD* pad, struct SSMIDI_PAD_NOTE* pack)
 {
-  unsigned wpos = atomic_load_explicit(&pad->wpos, memory_order_acquire);
-  unsigned rpos = atomic_load_explicit(&pad->rpos, memory_order_acquire);
+  unsigned wpos = ssmidi_atomic_load(pad->wpos);
+  unsigned rpos = ssmidi_atomic_load(pad->rpos);
   if ((wpos - rpos) > 0)
   {
-    unsigned const read_anchor = atomic_fetch_add_explicit(&pad->rpos, 1, memory_order_acquire);
-    memcpy(pack, &pad->q[read_anchor&63], sizeof(struct SSMIDI_PAD_NOTE));
+    memcpy(pack, &pad->q[rpos&63], sizeof(struct SSMIDI_PAD_NOTE));
+    ssmidi_atomic_add_rel(pad->rpos);
     return 1;
   }
   return 0;
