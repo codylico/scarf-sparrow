@@ -26,6 +26,11 @@ set(ScarfSparrow_Core_SOURCES
   "polyphony.hpp"
   "sum.cpp"
   "sum.hpp"
+  "subgraph.cpp"
+  "subgraph.hpp"
+  "factory.cpp"
+  "factory_util.cpp"
+  "factory.hpp"
 )
 
 add_library(scarfsparrow_core STATIC "${ScarfSparrow_Core_SOURCES}")
@@ -34,4 +39,5 @@ if (UNIX)
   target_link_libraries(scarfsparrow_core PUBLIC "${unix_math}")
 endif ()
 
+target_link_libraries(scarfsparrow_core PRIVATE json11)
 target_compile_features(scarfsparrow_core PUBLIC cxx_std_17)

@@ -1,0 +1,17 @@
+{
+  "inputs": [
+    { "name": "key", "type": "midi" }
+  ],
+  "outputs": [
+    { "name": "audio", "type": "pcm" }
+  ],
+  "nodes": [
+    {
+      "name": "random",
+      "class": "ScarfSparrow::RandomNode"
+    }
+  ],
+  "edges": [
+    { "source": "random:0", "sink": "audio" }
+  ]
+}

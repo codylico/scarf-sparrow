@@ -50,6 +50,7 @@ namespace ScarfSparrow
     unsigned addNode(std::unique_ptr<Node>&& node, std::string_view name);
     bool connect(GraphPortDesc source, GraphPortDesc sink_port);
     unsigned nameToIndex(std::string_view name);
+    unsigned short assessSamples() const;
     bool start(unsigned samples_per_frame);
     bool done() const noexcept { return full_end; }
     /** @return whether the audio graph finished. */
